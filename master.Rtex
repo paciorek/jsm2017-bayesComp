@@ -110,13 +110,13 @@
 % library(methods)
 % library(nimble)
 %
-% read_chunk('nimbleIntro.R')
-% read_chunk('mh-gumbel.R')
-% read_chunk('mh-bliss.R')
-% read_chunk('diagnostics-bliss.R')
-% read_chunk('gibbs-litters.R')
-% read_chunk('blocked-litters.R')
-% read_chunk('mixture-faithful.R')
+% read_chunk('code/nimbleIntro.R')
+% read_chunk('code/mh-gumbel.R')
+% read_chunk('code/mh-bliss.R')
+% read_chunk('code/diagnostics-bliss.R')
+% read_chunk('code/gibbs-litters.R')
+% read_chunk('code/blocked-litters.R')
+% read_chunk('code/mixture-faithful.R')
 %% end.rcode
 
 \title{Applied Bayesian Computational Methods}
