@@ -1,0 +1,490 @@
+
+\frame{
+\sffamily
+\frametitle{Hamiltonian Monte Carlo}
+\begin{itemize}
+\item As the ``banana'' distribution shows, for adaptive algorithms to be really automatic we need to use the local geometry of the posterior around our current value to guide the direction of the proposal.
+
+\item Hamiltonian Monte Carlo algorithms implement this idea in a very clever way!
+\end{itemize}
+}
+
+
+
+\frame{
+\sffamily
+\frametitle{Hamiltonian Dynamics}
+\begin{center}
+\vspace{-1mm}
+\begin{tabular}{lr}
+\hspace{-10mm}
+\begin{minipage}{6.0cm}
+\begin{itemize}
+{\small \item The Hamiltonian function $H$ describes the time evolution of a dynamical system (e.g., a spring).
+
+\item For Bayesian inference we are interested mainly in Hamiltonians of the form
+$$
+H(\bftheta, \bfphi) = U(\bftheta) + K(\bfphi)
+$$
+where $\bftheta \in \reals^d$ is the ``position'', $\bfphi \in \reals^d$ is the ``momentum'', $U$ is the potential energy and $K$ is the kinetic energy.}
+\end{itemize}
+\end{minipage}
+%&
+\begin{minipage}{4cm}
+%\vspace{-8mm}
+%\hspace{-8mm}
+\includegraphics[width=5cm,angle=0]{plots/spring2.pdf}
+\end{minipage}
+\end{tabular}
+\end{center}
+}
+
+
+
+\frame{
+\sffamily
+\frametitle{Hamiltonian Dynamics}
+\begin{itemize}
+\item For our purpose, the ``position'' $\bftheta$ corresponds to our parameters of interested and
+$$
+U(\bftheta) = -\log \left\{ p(\bftheta \mid \bfy) \right\}.
+$$
+
+\item The momemtun $\bfphi$ corresponds to auxiliary variables, and the form of the kinetic energy is arbitrary (as long as it is the negative of the logarithm of a well-defined density).  Often $\bfphi \sim \normal(\mathbf{0}, \mathbf{M})$ with $\mathbf{M} = \diag\{ m_1, \ldots, m_K \}$, so
+$$
+K(\bfphi) = \frac{1}{2} \bfphi^T\mathbf{M}\bfphi = \frac{1}{2} \sum_{k=1}^{d} m_k\phi_k^2.
+$$
+Can be interpreted as the kinetic energy available to $d$ springs (with constants $m_1, \ldots, m_K$) that have been stretched $\phi_1, \ldots, \phi_K$ units once they have returned to equilibrium.
+\end{itemize}
+}
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Hamiltonian Dynamics}
+\begin{itemize}
+\item The time evolution of the system is uniquely defined by Hamilton's equations,
+\begin{align*}
+\frac{\dd \bftheta}{\dd t} &= - \frac{\partial H}{\partial \bfphi}  ,    &    \frac{\dd \bfphi}{\dd t} &=  \frac{\partial H}{\partial \bftheta}
+\end{align*} 
+
+\item The Hamiltonian remains invariant as time evolves, i.e., 
+$$
+\frac{\dd H}{\dd t} = 0 .
+$$
+(easy to show using Hamilton's equations and the chain rule).  
+
+\item \alert{The dynamics induced by the Hamiltonian equations are reversible.  They also preserve volume in the $(\bftheta, \bfphi)$ space.}
+\end{itemize}
+}
+
+
+
+\frame{
+\sffamily
+\frametitle{Hamiltonian Dynamics and MCMC}
+The path forward should be clear
+\begin{itemize}
+\item We want to build an MCMC on the augmented space $(\bftheta, \bfphi)$ with stationary distribution
+$$
+p(\bftheta, \bfphi) \propto \exp\left\{ - U(\bftheta) - K(\bfphi) \right\}
+$$
+where $U(\bftheta) = p(\bftheta \mid \bfy)$ that uses Hamilton's dynamics (which are reversible and volume-preserving) to generate proposals.
+
+\item If we can simulate the dynamic over time exactly, then this is a valid MH proposal, and will always be accepted (because of the time invariance of the Hamiltonian).
+
+\item In practice we can only simulate the dynamics approximately by discretizing time.  If we do it carefully, the discretized dynamics will still be reversible and volume-preserving (although only be approximately invariant ...).
+\end{itemize}
+}
+
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Discretizing the Hamiltonian Dynamics}
+\begin{itemize}
+\item Euler's method (step size $\epsilon$):
+{\small \begin{align*}
+\phi_i(t + \epsilon) &= \phi_i(t) + \epsilon \frac{\dd \phi_i}{\dd t}(t) = \phi_i(t) - \epsilon \frac{\partial U}{\partial \theta_i}(\bftheta(t)) \\
+\theta_i(t + \epsilon) &= \theta_i(t) + \epsilon \frac{\dd \theta_i}{\dd t}(t) = \theta_i(t) + \epsilon \frac{\partial K}{\partial \phi_i}(\bfphi(t))
+\end{align*}}
+Discretized dynamics are not necessarily reversible.
+
+\item \alert{Better:}  ``Leapfrog method'' (step size $\epsilon$):
+{\small \begin{align*}
+\phi_i(t + \epsilon/2) &=  \phi_i(t) - \frac{\epsilon}{2} \frac{\partial U}{\partial \theta_i}(\bftheta(t)) \\
+\theta_i(t + \epsilon) &= \theta_i(t) + \epsilon \frac{\partial K}{\partial \phi_i}(\bfphi(t + \epsilon/2)) \\
+\phi_i(t + \epsilon) &=  \phi_i(t + \epsilon/2) - \frac{\epsilon}{2} \frac{\partial U}{\partial \theta_i}(\bftheta(t + \epsilon))
+\end{align*}}
+
+\item \alert{Even Better:}  Multiple steps of ``Leapfrog''.
+\end{itemize}
+}
+
+
+
+
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{The Hamiltonian Monte Carlo algorithm}
+Discretized Hamiltonian trajectories for $H(\theta, \phi) = \theta^2 + \phi^2$ using the leapfrog method.  Left panel corresponds to $\epsilon = 0.3$ and the right to $\epsilon = 1.2$.
+\begin{center}
+\includegraphics[width=9cm,angle=0]{plots/hamiltonian_neil.pdf}
+\end{center}
+
+{\hfill \scriptsize Taken from \cite{neal2011mcmc}.}
+}
+
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{The Hamiltonian Monte Carlo algorithm}
+\begin{enumerate}
+{\scriptsize \item Generate $\bfphi^{(s)} \sim q$, where $q \propto \exp \left\{ - K(\bfphi) \right\}$.
+\item Initialize $\bfvarphi^{(s)} = \bfphi^{(s)}$ and $\bfvartheta^{(s)} = \bftheta^{(s)}$
+\item Update $\bfvarphi^{(s + 1/(L+1))} = \bfvarphi^{(s)} - \frac{\epsilon}{2} \frac{\partial U}{\partial \theta_i}(\bftheta^{(s)})$.
+\item For $l = 1, \ldots, L-1$
+\begin{enumerate}
+\item Update $\bfvartheta^{(s + l/L)} = \bfvartheta^{(s + (l-1)/L)} + \epsilon\frac{\partial K}{\partial \phi_i}(\bfvarphi^{(s + l/(L+1))})$.
+\item Update $\bfvarphi^{(s + (l+1)/(L+1))} = \bfvarphi^{(s + l/(L+1))} - \epsilon\frac{\partial U}{\partial \theta_i}(\bfvartheta^{(s + l/L))})$.
+\end{enumerate}
+\item Update $\bfvartheta^{(s + 1)} = \bfvartheta^{(s + (L-1)/L)} + \epsilon\frac{\partial K}{\partial \phi_i}(\bfvarphi^{(s + L/(L+1))})$.
+\item Update $\bfvarphi^{(s + 1)} = \bfvarphi^{(s - L/(L+1))} - \frac{\epsilon}{2} \frac{\partial U}{\partial \theta_i}(\bfvartheta^{(s + 1)})$.
+\item Set 
+$$
+\bftheta^{(s+1)} = \begin{cases} 
+\bfvartheta^{(s+1)}  & \mbox{with prob. } \rho(\bftheta^{(s)}, \bfphi^{(s)}, \bfvartheta^{(s+1)}, \bfvarphi^{(s+1)})  \\
+\bftheta^{(s)}  & \mbox{with prob. } 1 - \rho(\bftheta^{(s)}, \bfphi^{(s)}, \bfvartheta^{(s+1)}, \bfvarphi^{(s+1)})
+\end{cases}$$
+where
+\begin{multline*}
+\rho(\bftheta^{(s)}, \bfphi^{(s)}, \bfvartheta^{(s+1)}, \bfvarphi^{(s+1)}) = \\
+%
+\min\left\{ 1, \exp\left\{ U\left(\bftheta^{(s)}\right) - U\left(\bfvartheta^{(s+1)}\right) + K\left(\bfphi^{(s)}\right) - K\left(-\bfvarphi^{(s+1)}\right) \right\} \right\}
+\end{multline*}
+}
+\end{enumerate}
+}
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{The Hamiltonian Monte Carlo algorithm}
+\begin{itemize}
+\item {\bf Example (sampling from the Cauchy distribution):  }  Consider using a Hamiltonian Monte Carlo algorithm to sample from a Cauchy distribution $p(\theta) = \frac{1}{\pi (1 + \theta^2)}$.  We use a Gaussian distribution for the momentum, so
+\begin{align*}
+U(\theta) &= - \log p(\theta) = \log \left\{ 1 + \theta^2 \right \}  ,   &  K(\phi) &= \frac{\phi^2}{2}  .
+\end{align*}
+\item Hence, we have
+\begin{align*}
+\frac{\partial U}{\partial \theta} &= \frac{2\theta}{ 1 + \theta^2}  ,  &  \frac{\partial K}{\partial \phi} &= \phi  .
+\end{align*}
+\end{itemize}
+}
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{The Hamiltonian Monte Carlo algorithm}
+\begin{itemize}
+\item {\bf Example (sampling from the Cauchy distribution, cont):}  If we take a single step ($L=1$) of length $\epsilon$ 
+$$
+\theta^{(p)} = \theta^{(c)} \left\{ 1 - \frac{\epsilon^2}{1 + \left( \theta^{(p)} \right)^2} \right\} + \epsilon \phi^{(c)}
+$$
+where $\phi^{(c)} \sim \normal(0,1)$.
+
+\item This looks similar to what you would get from a random walk proposal with standard deviation $\epsilon$, $\theta^{(p)} = \theta^{(c)} + \epsilon \omega$ where $\omega \sim \normal(0,1)$.
+
+\item However, there are some important differences!
+\end{itemize}
+}
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{The Hamiltonian Monte Carlo algorithm}
+\begin{itemize}
+\item {\bf Example (sampling from the Cauchy distribution, cont):}  Suppose $\theta^{(p)} = -3$.
+
+\item The random walk proposal has the same probability of proposing a value to the right of $\theta^{(p)}$ as it does a value to the left.
+
+\item For small $\epsilon$ we have $\left\{ 1 - \frac{\epsilon^2}{1 + \left( \theta^{(p)} \right)^2} \right\} \in [0,1]$.  Hence, the Hamiltonian MH algorithm has a higher probability of proposing value to the right of $-1$ than values to its left.  This is what you would intuitively would like to do!
+
+\item A similar argument applies for positive values of $\theta^{(p)}$.
+\end{itemize}
+}
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{The Hamiltonian Monte Carlo algorithm}
+\begin{itemize}
+\item {\bf Example (sampling from the Cauchy distribution, cont):}  Suppose $\theta^{(c)} = -3$ and $\epsilon = 1$
+\begin{center}
+\includegraphics[width=6cm,angle=0]{plots/hamiltoniancauchy.pdf}
+\end{center}
+\end{itemize}
+}
+
+
+
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{The Hamiltonian Monte Carlo algorithm}
+\hspace{-3mm}
+\begin{center}
+\begin{tabular}{lr}
+\begin{minipage}{5.6cm}
+{\small {\bf Example (bivariate normal target):}  Consider sampling from the variate normal distribution
+$$
+\left(\begin{matrix}
+\theta_1  \\
+\theta_2 \end{matrix}\right) \sim \normal \left(
+\left(\begin{matrix}
+15  \\
+45 \end{matrix}\right) ,
+\left(\begin{matrix}
+1  &  0.95  \\
+0.95  & 1 \end{matrix}\right)
+\right)
+$$}
+using both a Hamiltonian Monte Carlo and a bivariate random walk.
+\end{minipage}
+&
+\begin{minipage}{5.6cm}
+\includegraphics[height=4.5cm,angle=0]{plots/bivariatenormalhighcor.pdf}
+\end{minipage}
+\end{tabular}
+\end{center}
+}
+
+
+
+
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{The Hamiltonian Monte Carlo algorithm}
+\begin{itemize}
+\item {\bf Example (bivariate normal target, cont):}  For the Hamiltonian algorithm we use independent Gaussian distributions for the momentum variables $\phi_1$ and $\phi_2$.  The gradients are
+\begin{align*}
+\nabla U (\bftheta) &= \left(\begin{matrix}
+1  &  0.95  \\
+0.95  & 1 \end{matrix}\right)^{-1} \bftheta    &   \nabla K(\bfphi) &= \bfphi
+\end{align*}
+
+\item For the random walk Metropolis algorithm, we use an optimal bivariate Gaussian proposal
+$$
+\bfvartheta^{(s+1)} \mid \bftheta^{(s)} \sim \normal \left(  \bftheta^{(s)} , 
+\frac{2.38^2}{2} \left(\begin{matrix}
+1  &  0.95  \\
+0.95  & 1 \end{matrix}\right)
+\right)
+$$
+\item Code in \texttt{hamiltonian\_bivariatenormal.R}.
+% Acceptance rate around 36%
+% \texttt{hamiltonian\_bivariatenormal.R}
+\end{itemize}
+}
+
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{The Hamiltonian Monte Carlo algorithm}
+\begin{tabular}{cc}
+{\small Random walk}   &   {\small Hamiltonian}   \\
+{\small Acceptance rate 36\%}   &   {\small Acceptance rate  89\%} \\
+\includegraphics[height=4.9cm,angle=0]{plots/bivariatenormal_RW.pdf}  &  
+\includegraphics[height=4.9cm,angle=0]{plots/bivariatenormal_hamiltonian.pdf}
+\end{tabular}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{The Hamiltonian Monte Carlo algorithm}
+{\bf Suggested Exercise:  }  Implement a Hamiltonian Monte Carlo algorithm to sample from the ``banana'' distribution and compare the performance of the algorithm with that of the adaptive random walk.
+}
+
+
+
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Hamiltonian Dynamics}
+\begin{center}
+\begin{tabular}{lr}
+\vspace{-3mm} \begin{minipage}{5.4cm}
+\begin{itemize}
+{\small \item Hamiltonian algorithms can be useful in moving you across modes because proposals happen (approximately) along constant-energy contours.
+\item For example, consider sampling from a mixture of two normals
+$$
+0.5 \normal(-2,1) + 0.5 \normal(2,1)
+$$
+using a standard Gaussian distribution for the momentum variables.
+}
+\end{itemize}
+\end{minipage}
+&
+\begin{minipage}{5.6cm}
+\includegraphics[height=4.9cm,angle=0]{hamiltonianmixture.pdf}
+\end{minipage}
+\end{tabular}
+\end{center}
+}
+
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Tuning}
+\begin{itemize}
+\item Hamiltonian Monte Carlo algorithms are not totally automatic, as you still need to decide the size and number of steps, as well as (at least) the covariance matrix associated with the momentum variables.
+
+\vspace{3mm}
+
+\item As with RWMH, tuning HMC algorithms usually requires pilot runs for different values of $\epsilon$ and $L$.  Be careful, optimal values might be different before and after convergence!
+\end{itemize}
+}
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Tuning}
+\begin{itemize}
+\item The value of $\epsilon L$ roughly controls how far you move from the current point.  However, a large value of $\epsilon L$ does not necessarily lead to longer-distance moves (recall the graphs for the Hamiltonian trajectories in $(\bftheta, \bfphi)$).
+
+\item Indeed, the chain produced by a Hamiltonian algorithm could potentially be periodic, but that is rarely the case in practice.  One solution is to use randomly chosen $\epsilon$ and $L$ (from a relatively narrow range) at each iteration.
+
+\item Assuming that $\epsilon L$ is kept constant, the smaller $\epsilon$ is, the closest the discretized trajectory is to the continuous time one, but more computations are required.
+\end{itemize}
+}
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Tuning}
+\begin{itemize}
+\item The rejection rate of the algorithm is controlled mainly by $\epsilon$ (i.e., how good the discrete-time approximation is).  Values of $\epsilon$ that are too big might lead to unstable trajectories and very low rejection rates, and the problem might not be obvious in pilot runs because the rejection rate might be very different in different regions of the space.
+
+\item As a rule of thump, the optimal acceptance rate for HMC is around 65\% for high-dimensional problems (against the $\sim$ 23\% for high-dimensional RWMH we discussed before).
+\end{itemize}
+}
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Tuning}
+\begin{itemize}
+\item If an estimate of $\Var(\bftheta \mid \bfy)$ is available, applying a linear transformation for the position variables so that they have (approximately) variance 1 and no correlation and using independent standard Gaussian momentum variables leads to good performance with a small number of steps 
+
+\item Note that under Gaussian momentum, performance of the algorithm is invariant to linear transformations $\mathbf{B} \theta$ if the momentum variables are multiplied by $\left( \mathbf{B}' \right)^{-1}$.  Hence, alternatively we leave the positions untransformed and use correlated Gaussian momentum variables.
+
+\item In any case, it is a good idea to use different scales for the each momentum variable if the position variables have very different variables.
+\end{itemize}
+}
+
+
+\frame{
+\sffamily
+\frametitle{Implementation}
+
+\begin{itemize}
+
+\item Tuning HMC can be tricky, but the Stan software was developed for just this purpose. Stan uses its own language for specifying the statistical model.
+
+\item \fix insert Stan GP example [CJP to do]
+
+\item NIMBLE doesn't provide HMC because we're just now implementing automatic differentation and because it's Stan's sweet spot.
+\end{itemize}
+
+}
+
+
+\frame{
+\sffamily
+\frametitle{Special cases and extensions}
+\begin{itemize}
+\item A single step HMC (i.e., $L=1$ ) corresponds to a pre-conditioned Langevin diffusion as used in a Metropolis-Adjusted Langevin Algorithm (MALA).
+
+\item Note that HMC cannot deal with discrete parameters (but see new work from David Dunson's group).
+
+\item HMC can be seen as just another MH kernel, so it can be used for subsets of parameters and combined with other kernels (gives you a way to separate discrete parameters).
+
+\item A number of useful extensions, examples include
+\begin{itemize}
+\item Riemmanian HMC (non-constant $\mathbf{M}$).
+\item ``Splitting'' the potential.
+\item Partial momentum refreshment.
+\end{itemize}
+\end{itemize}
+}
+
+

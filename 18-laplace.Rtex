@@ -1,0 +1,407 @@
+
+
+\frame{
+\sffamily
+\frametitle{The Laplace approximation}
+\begin{itemize}
+\item We move now to consider computational techniques that rely on approximating the posterior distribution with a more tractable alternative.  We start with the Laplace approximation.
+
+\item The Laplace approximation is a simple yet powerful asymptotic expansion of the posterior distribution that goes back to Laplace in 1774!
+
+\item There are different variants of the technique, but the main argument is similar in all cases:  Assume that $y_1, \ldots, y_n$ are independent and identically distributed with $y_i \mid \bftheta \sim p(y_i \mid \bftheta)$ so that the (unnormalized) posterior can be written as
+$$
+%  p(\bfy \mid \bftheta) p(\bftheta)
+p( \bftheta \mid \bfy ) \propto \exp \left\{ - n h_n(\bftheta) \right\} ,
+$$
+where $h_n(\bftheta) = -\frac{1}{n} \sum_{i=1}^{n} \log p(y_i \mid \bftheta) - \frac{p(\bftheta)}{n}$.
+\end{itemize}
+}
+
+
+
+
+\frame{
+\sffamily
+\frametitle{The Laplace approximation}
+\begin{itemize}
+\item Now, do a second order expansion of $h_n(\bftheta)$ around a point $\bftheta_0$ and write
+\begin{multline*}
+h_n(\bftheta) = h_n(\bftheta_0) + \left[ \nabla h_n \left( \bftheta_0 \right) \right]^{T} \left[ \bftheta - \bftheta_0 \right] \\
+%
++ \frac{1}{2} \left[ \bftheta - \bftheta_0 \right]^{T} \left[ \nabla \nabla h_n \left( \bftheta_0 \right) \right] \left[ \bftheta - \bftheta_0 \right]  + R_n(\bftheta, \bftheta_0)  ,
+\end{multline*}
+where $\nabla h_n \left( \bftheta \right)$ is the gradient of $h_n$ and $\nabla \nabla h_n \left( \bftheta \right)$ is the Hessian matrix of $h$.
+
+\item It is not difficult to show that, under standard regularity conditions, $ \lim_{n \to \infty} R_n(\bftheta, \bftheta_0) = 0$.
+\end{itemize}
+}
+
+
+
+
+\frame{
+\sffamily
+\frametitle{The Laplace approximation}
+\begin{itemize}
+\item The previous argument suggests the approximation
+\begin{multline*}
+p( \bftheta \mid \bfy ) \overset{\boldsymbol{\cdot}}{\propto} \exp \left\{ - n
+ \left[ \nabla h_n \left( \bftheta_0 \right) \right]^{T} \left[ \bftheta - \bftheta_0 \right] \right. \\
+%
+\left. - \frac{n}{2} \left[ \bftheta - \bftheta_0 \right]^{T} \left[ \nabla \nabla h_n \left( \bftheta_0 \right) \right] \left[ \bftheta - \bftheta_0 \right]   \right\}
+\end{multline*}
+which corresponds to a Gaussian kernel!
+
+\item Note that the contribution of the prior drops out faster than the contribution from the likelihood.  Therefore, alternatively,
+\begin{multline*}
+p( \bftheta \mid \bfy )  \overset{\boldsymbol{\cdot}}{\propto} \exp \left\{ 
+ \left[ \left. \nabla p\left( \bfy \mid \bftheta \right) \right|_{\bftheta= \bftheta_0}\right]^{T} \left[ \bftheta - \bftheta_0 \right] \right. \\
+%
+\left. - \frac{1}{2} \left[ \bftheta - \bftheta_0 \right]^{T} \left[ \left. - \nabla \nabla p \left( \bfy \mid \bftheta \right)  \right|_{\bftheta = \bftheta_0} \right] \left[ \bftheta - \bftheta_0 \right]   \right\} .
+\end{multline*}
+
+\item This last version of the approximation is the basis for the derivation of the BIC, as well as for the ``Bayesian CLT''.
+\end{itemize}
+}
+
+%where $- \nabla \nabla p \left( \bfy \mid \bftheta \right)  \right|_{\bftheta = \bftheta_0}$ is the 
+
+
+\frame{
+\sffamily
+\frametitle{The Laplace approximation}
+\begin{itemize}
+\item Typically $\bftheta_0$ is taken to be either the MLE of $\bftheta$ or the maximum a posteriori, leading to simplifications.
+\begin{itemize}
+\item For example, discarding the contribution of the likelihood and letting $\bftheta_0 = \hat{\bftheta}$ we have 
+\begin{multline*}
+p( \bftheta \mid \bfy )  \overset{\boldsymbol{\cdot}}{\propto} \\
+%
+\exp \left\{ - \frac{1}{2} \left[ \bftheta - \hat{\bftheta} \right]^{T} \left[ \left. - \nabla \nabla p \left( \bfy \mid \bftheta \right)  \right|_{\bftheta = \bftheta_0} \right] \left[ \bftheta - \hat{\bftheta} \right]   \right\}
+\end{multline*}
+where the matrix $\left. - \nabla \nabla p \left( \bfy \mid \bftheta \right)  \right|_{\bftheta = \hat{\bftheta}}$ is called the \textit{observed} information matrix.  That is 
+$$
+\bftheta \mid \bfy \overset{\boldsymbol{\cdot}}{\sim} \normal\left( \hat{\bftheta} , \left[ \left. - \nabla \nabla p \left( \bfy \mid \bftheta \right)  \right|_{\bftheta = \bftheta_0} \right]^{-1} \right)
+$$
+\end{itemize}
+
+\end{itemize}
+}
+
+
+
+
+\frame{
+\sffamily
+\frametitle{The Laplace approximation}
+\begin{itemize}
+\item Although technically the result is valid for any parameterization, typically appropriate transformations (e.g., logarithm, logit) are applied to the parameters before the approximation.
+
+\item The Laplace approximation can be very accurate for large $n$, but in complicated hierarchical models with a large number of hyperparameters the approximation can be very poor!
+
+\item When the posterior moments are available in closed form, it might simply be better to use the posterior mean and variance as the moments for the normal approximation.
+
+\item Even if they are not very accurate, Laplace approximations are sometimes used to guide the construction of proposal distributions in some of the Monte Carlo schemes discussed before.
+\end{itemize}
+}
+
+
+
+
+\frame{
+\sffamily
+\frametitle{The Laplace approximation}
+\begin{itemize}
+\item {\bf Example (Poisson-Gamma models): }  Consider data $y_1, \ldots, y_n$ where $y_i \sim \Poi (\lambda)$ and $\lambda \sim \Gam(a, b)$  The posterior distribution (which is known to be a $\Gam\left( a + \sum_{i=1}^{n} y_i + a , n + b \right)$ distribution) can be written as $p(\lambda \mid \bfy) \propto \left\{ - n h_n(\lambda) \right\}$ where 
+$$
+h_n(\lambda) = - \lambda \frac{n+b}{n} + \frac{a - 1 + \sum_{i=1}^{n} y_i}{n} \log \lambda .
+$$
+
+It is easy to se that the posterior mode in this case is $\tilde{\lambda} = \frac{a - 1 + \sum_{i=1}^{n} y_i}{n+b}$.  Also $- \frac{\partial^2 h_n}{\partial \lambda^2} = \frac{a - 1 + \sum_{i=1}^{n} y_i}{n} \frac{1}{\lambda^2}$, which leads 
+$$
+\lambda \mid \bfy \overset{\boldsymbol{\cdot}}{\sim} \normal \left(  \frac{a - 1 + \sum_{i=1}^{n} y_i}{n+b} , \frac{\left\{ a - 1 + \sum_{i=1}^{n} y_i \right\}}{(n+b)^2} 
+\right)
+$$
+\end{itemize}
+}
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{The Laplace approximation}
+\begin{itemize}
+\item {\bf Example (Poisson-Gamma models, cont): }  Alternatively, if we discard the prior and center the approximation on the MLE we get the familiar expression
+$$
+\lambda \mid \bfy \overset{\boldsymbol{\cdot}}{\sim} \normal \left(  \frac{1}{n} \sum_{i=1}^{n} y_i ,   \sum_{i=1}^{n} \frac{y_i}{n^2}   
+\right).
+$$
+(Note that this is equivalent to setting $a=1$ and $b=0$ in the first approximation).
+
+\vspace{1mm}
+
+If we are interested in approximating the posterior mean then we have
+\begin{center}
+\begin{tabular}{|c|c|} \hline
+Exact            &   $\frac{a + \sum_{i=1}^{n}y_i}{b + n}$      \\
+Like + Prior   &  $\frac{a -1 + \sum_{i=1}^{n}y_i}{b + n}$   \\
+Like only       &  $\frac{\sum_{i=1}^{n}y_i}{n}$                   \\ \hline
+\end{tabular}
+\end{center}
+
+\vspace{1mm}
+
+If $a$ is large and $n$ small, the differences can be substantial!
+\end{itemize}
+}
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{The Laplace approximation}
+\begin{itemize}
+\item {\bf Example (Poisson-Gamma models): }  The following graphs show a comparison of the two approximations against the true posterior for $a=2$, $b=1/5$ and $\bar{y} = 2$.
+
+\includegraphics[height=5.2cm,angle=0]{plots/laplaceapprox_poissongamma_n10.pdf}
+\includegraphics[height=5.2cm,angle=0]{plots/laplaceapprox_poissongamma_n50.pdf}
+
+\end{itemize}
+}
+
+
+
+
+\frame{
+\sffamily
+\frametitle{The Laplace approximation}
+\begin{itemize}
+\item {\bf Example (Poisson-Gamma models): }  The following table compares the exact posterior mean against these two approximation for different random samples with $\bar{y} = 2$ and different priors.
+\begin{center}
+\begin{tabular}{ccccc}
+  $n$   &   $(a,b)$   &   Exact   &   Like + Prior   &  Like only \\ \hline\hline
+  10     &              &   1.91   &   1.82   &   2.00   \\
+  50   &  $(1,1)$ &   1.98   &   1.96   &   2.00   \\
+  500 &              &  2.00    &   2.00   &   2.00   \\ \hline
+  10     &              &   2.16   &   2.06   &   2.00   \\
+  50   &  $(2,1/5)$ &   2.03   &   2.01   &   2.00   \\
+  500 &              &   2.00   &   2.00   &   2.00   \\ \hline
+\end{tabular}
+\end{center}
+
+The file \texttt{LaplaceapproximationPoissonGamma.R} contains the code used to generate this table.
+\end{itemize}
+}
+
+
+
+\frame{
+\sffamily
+\frametitle{The Laplace approximation}
+\begin{itemize}
+\item {\bf Example (Poisson-Gamma models): }  The following table compares the exact posterior probability of the interval $(l,u)$ against these two approximation for different intervals and sample sizes.
+
+\begin{center}
+\begin{tabular}{ccccc}
+  $(l,u)$   &   $n$   &   Exact   &   Like + Prior   &  Like only \\ \hline\hline
+  $(1.5, 2.8)$     &              &   0.849   &   0.844   &   0.831   \\
+  $(1.8, 2.3)$   &  $10$ &   0.420   &   0.422   &   0.421   \\
+  $(2.5, \infty)$ &              &   0.218   &   0.163   &    0.132  \\ \hline
+  $(1.5, 2.8)$     &              &   0.998   &   0.995   &   0.994   \\
+  $(1.8, 2.3)$   &  $50$ &   0.783   &   0.780   &   0.775   \\
+  $(2.5, \infty)$ &              &   0.014   &  0.007    &   0.006   \\ \hline
+\end{tabular}
+\end{center}
+\end{itemize}
+}
+
+
+
+\frame{
+\sffamily
+\frametitle{The Laplace approximation}
+{\bf Suggested exercise:}  Repeat the previous exercise but working with $\theta = \log (\lambda)$.  You should see an improvement in the estimates of the tail probabilities.
+}
+
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Integrated Nested Laplace Approximations}
+\begin{itemize}
+\item INLA is designed for hierarchical models where
+\begin{align*}
+y_i \mid \theta_i, \bfeta_1 &\sim p(y_i \mid \theta_i, \bfeta_1)    &    \bftheta \mid \bfeta_2 & \sim \normal \left( \mathbf{0} , \mathbf{Q}(\bfeta_2)  \right)  ,
+\end{align*}
+where $(\bfeta_1^T, \bfeta_2T^) \sim p(\bfeta_1, \bfeta_2)$ and $m = \mbox{dim} (\bfeta_1) + \mbox{dim} (\bfeta_2)$ is small (usually $\le 6$).
+
+\item Particularly useful if $\mathbf{Q}(\bfeta_2)$ is sparse.
+
+\item Goal is to provide approximations to 
+$$
+p(\theta_i \mid \bfeta, \bfy) = \int p(\theta_i \mid \bfeta, \bfy) p(\bfeta \mid \bfy) \dd \bfeta
+$$
+and
+$$
+p(\eta_j \mid \bfy) = \int p(\eta \mid \bfy) \dd \bfeta_{-j} .
+$$
+
+\item Uses Laplace approximations twice (hence the name).
+\end{itemize}
+}
+
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Approximating $p(\bfeta \mid \bfy)$}
+\begin{itemize}
+\item Start by approximating $p(\bfeta \mid \bfy)$ by
+$$
+\tilde{p}(\bfeta \mid \bfy) \propto \left. \frac{p(\bftheta, \bfeta, \bfy)}{\tilde{p}_G(\bftheta \mid \bfeta, \bfy)} \right|_{\bftheta = \hat{\bftheta}(\bfeta)}
+$$
+where $\tilde{p}_G(\bftheta \mid \bfeta, \bfy)$ is a Gaussian approximation to the full conditional of $\bftheta$ (obtained by a Laplace approximation),
+$$
+p(\bftheta \mid \bfeta, \bfy) \propto \exp \left\{ -\frac{1}{2} \bftheta^T \mathbf{Q}\left(\bfeta_2\right) \bftheta + \sum_{i} \log\left\{ p(y_i \mid \theta_i, \bfeta_1) \right\} \right\}
+$$
+and $\hat{\bftheta}(\bfeta) = \arg\max_{\bftheta} p(\bftheta \mid \bfeta, \bfy)$.
+
+\item This is just the Laplace approximation around the posterior mode we discussed before.
+\end{itemize}
+}
+
+
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Approximating $p(\bfeta \mid \bfy)$}
+\begin{itemize}
+\item Generally speaking $\tilde{p}(\bfeta \mid \bfy)$ will not be tractable even if $\tilde{p}_G(\bftheta \mid \bfeta, \bfy)$ is.  Hence, this approximation by itself is not too helpful for computing an approximation to $p(\theta_i \mid \bfeta, \bfy)$.
+
+\item We go one step forward and approximate the approximation using a discrete set of points,
+$$
+\tilde{p}^{*}(\bfeta \mid \bfy) = \sum_{i_1 \in \mathcal{I}_1} \cdots \sum_{i_m \in \mathcal{I}_m} w_{i_1, \cdots, i_m} \delta_{(\tilde{\eta}_{i_1}, \ldots, \tilde{\eta}_{i_m})} (\bfeta)
+$$
+where the points $(\tilde{\eta}_{i_1}, \ldots, \tilde{\eta}_{i_m})$ for $(i_1, \ldots, i_m) \in \mathcal{I}_1 \times \cdots \times \mathcal{I}_m$ form a regular grid and
+$$
+w_{i_1, \cdots, i_m} \propto \tilde{p}^{*}(\tilde{\eta}_{i_1}, \ldots, \tilde{\eta}_{i_m} \mid \bfy)
+$$
+\item To select the grid points we use a second Laplace expansion (in this case of $\tilde{p}(\bfeta \mid \bfy)$).  See next slide.
+\end{itemize}
+}
+
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Approximating $p(\bfeta \mid \bfy)$}
+\begin{center}
+\includegraphics[width=11cm,angle=0]{plots/INLA.pdf}  \\
+\hfill From \cite{rue2009approximate}.
+\end{center}
+}
+
+
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Approximating $p(\eta_i \mid \bfy)$}
+\begin{itemize}
+\item It is natural to approximate $p(\eta_j \mid \bfy)$ by 
+$$
+\tilde{p}(\eta_j \mid \bfy) = \int \tilde{p}(\eta \mid \bfy) \dd \bfeta_{-j}  .
+$$
+
+\item The integral can be computed using standard numerical integration techniques.
+
+\item However, it is much more efficient to reuse the grid of values used in the definition $\tilde{p}^{*}(\bfeta \mid \bfy)$ rather than a completely new grid that is aligned to the axis to construct an interpolator, which is then used for the numerical integration procedure.
+\end{itemize}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Approximating $p(\theta_i \mid \bfeta, \bfy)$}
+\begin{itemize}
+\item If we had access to $p(\theta_i \mid \bfeta, \bfy)$ in closed form, the approximation $\tilde{p}^{*}(\bfeta \mid \bfy)$ could be used to compute $\hat{p}(\theta_i \mid \bfy)$ as
+\begin{align*}
+\hat{p}(\theta_i \mid \bfy) &= \int p(\theta_i \mid \bfeta, \bfy) \tilde{p}^{*}(\bfeta \mid \bfy)  \dd \bfeta \\
+& = \sum_{i_1 \in \mathcal{I}_1} \cdots \sum_{i_m \in \mathcal{I}_m} w_{i_1, \cdots, i_m} 
+p(\theta_i \mid (\tilde{\eta}_{i_1}, \ldots, \tilde{\eta}_{i_m}), \bfy)
+\end{align*}
+
+\item However, in $p(\theta_i \mid \bfeta, \bfy)$ is not available in closed form so we need to first approximate by $\hat{p}(\theta_i \mid \bfeta, \bfy)$.  One option is to reuse the Laplace approximation $\tilde{p}_G(\bftheta \mid \bfeta, \bfy)$ we already computed for getting $\hat{p}(\theta_i \mid \bfy)$.  Then
+$$
+\hat{p}^{*}(\theta_i \mid \bfy) = \sum_{i_1 \in \mathcal{I}_1} \cdots \sum_{i_m \in \mathcal{I}_m} w_{i_1, \cdots, i_m} 
+\tilde{p}_G(\theta_i \mid (\tilde{\eta}_{i_1}, \ldots, \tilde{\eta}_{i_m}), \bfy)
+$$
+\end{itemize}
+}
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Approximating $p(\theta_i \mid \bfeta, \bfy)$}
+\begin{itemize}
+\item Reusing $\tilde{p}_G(\bftheta \mid \bfeta, \bfy)$ is expedient, but does not account for skewness and other features of the data.
+
+\item An alternative is to use another Laplace expansion
+$$
+\tilde{p}_{LA}(\theta_i \mid \bfeta, \bfy) \propto \left. \frac{p(\bftheta, \bfeta, \bfy)}{\tilde{p}_{GG}(\bftheta_{-i} \mid \theta_i, \bfeta, \bfy)} \right|_{\bftheta_{-i} = \hat{\bftheta}_{-i} (\theta_i, \bfeta)}
+$$
+where $\tilde{p}_{GG}(\bftheta_{-i} \mid \theta_i, \bftheta, \bfy)$ is a Gaussian approximation to $(\bftheta_{-i} \mid \theta_i, \bfeta, \bfy)$ (which is different from the full conditional obtained from $\bftheta \mid \bfeta, \bfy$).
+\end{itemize}
+}
+
+\frame{
+\sffamily
+\frametitle{Laplace-based methods and NIMBLE}
+
+\begin{itemize}
+\item Currently your software options are R-INLA and the related TMB software.
+\item NIMBLE is very close to having automatic differentiation, which is important for Laplace-based methods as they need gradients.
+\item At that point, one of our target algorithms will be INLA so I hope to see that in NIMBLE within a year.
+\item Our hope is that by providing in NIMBLE, users can:
+\begin{itemize}
+\item use BUGS code to specify their model
+\item use distributions and model structures not provided in R-INLA
+\item more readily compare results with other algorithms
+\end{itemize}
+\end{itemize}
+
+}
+
+

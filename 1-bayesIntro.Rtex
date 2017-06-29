@@ -1,0 +1,553 @@
+\section{Introduction}
+
+\frame{
+\sffamily
+\frametitle{The Bayesian approach to statistical inference}
+\begin{center}
+\includegraphics[height=7.0cm,angle=0]{plots/bayes.pdf}
+\end{center}
+}
+
+
+
+
+\frame{
+\sffamily
+\frametitle{The Bayesian approach to statistical inference}
+\begin{itemize}
+\item {\bf Example (estimating the mean of a normal):  }  Assume $y_1, \ldots, y_n$ is an independent and identically distributed sample with $y_i \mid \theta \sim \normal(\theta, 1)$ and assign $\theta$ a Gaussian prior, i.e., $\theta \sim \normal(\mu, \tau^2)$.  Our goal is to provide (Bayesian) point and interval estimates for the unknown parameter $\theta$.
+
+\vspace{1mm}
+
+The first stage in any Bayesian analysis is to determine the posterior density/probability mass function of the parameter(s) of interest (in this case $\theta$).
+
+
+\end{itemize}
+}
+
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{The Bayesian approach to statistical inference}
+
+\begin{itemize}
+\item  {\bf Example (estimating the mean of a normal, cont):  }  Using Bayes theorem,
+{\tiny \begin{align*}
+p(\bftheta \mid \bfy) =
+%
+\frac{\left(\frac{1}{2\pi}\right)^{n/2} \exp\left\{ - \frac{1}{2} \sum_{i=1}^{n}(y_i - \theta)^2\right\} \left(\frac{1}{2 \pi \tau^2}\right)^{1/2} \exp\left\{ - \frac{(\theta - \mu)^2}{2\tau^2} \right\}}
+%
+{\int_{-\infty}^{\infty} \left(\frac{1}{2\pi}\right)^{n/2} \exp\left\{ - \frac{1}{2} \sum_{i=1}^{n}(y_i - \theta)^2\right\} \left(\frac{1}{2 \pi \tau^2}\right)^{1/2} \exp\left\{ - \frac{(\theta - \mu)^2}{2\tau^2} \right\} \dd \theta}
+\end{align*}
+}
+
+Canceling terms in the numerator and denominator this simplifies to
+{\tiny \begin{align*}
+p(\bftheta \mid \bfy) =  \frac{\exp\left\{  -\frac{1}{2} \left( n\theta^2 - 2\theta n \bar{y} + \frac{\theta^2}{\tau^2} - 2 \theta \frac{\mu}{\tau^2} \right) \right\}}
+{\int_{-\infty}^{\infty} \exp\left\{  -\frac{1}{2} \left( n\theta^2 - 2\theta n \bar{y} + \frac{\theta^2}{\tau^2} - 2 \theta \frac{\mu}{\tau^2} \right) \right\} \dd \theta}
+\end{align*}}
+Note that the expression in the numerator is a quadratic form on $\theta$!!!
+\end{itemize}
+}
+
+
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{The Bayesian approach to statistical inference}
+
+\begin{itemize}
+\item  {\bf Example (estimating the mean of a normal, cont):  }  Doing a completion of squares we get
+{\tiny \begin{align*}
+p(\bftheta \mid \bfy) =  \frac{\exp\left\{  -\frac{1}{2} \left( n + \frac{1}{\tau^2}\right) \left( \theta - \frac{ n\bar{y} + \frac{\mu}{\tau^2}}{n + \frac{1}{\tau^2}} \right)^2 + \frac{1}{2} \frac{ \left(n\bar{y} + \frac{\mu}{\tau^2}\right)^2}{n + \frac{1}{\tau^2}} \right\}}
+{\int_{-\infty}^{\infty} \exp\left\{  -\frac{1}{2} \left( n + \frac{1}{\tau^2}\right) \left( \theta - \frac{ n\bar{y} + \frac{\mu}{\tau^2}}{n + \frac{1}{\tau^2}} \right)^2 + \frac{1}{2} \frac{ \left(n\bar{y} + \frac{\mu}{\tau^2}\right)^2}{n + \frac{1}{\tau^2}} \right\} \dd \theta}\end{align*}}
+
+Note that the last term cancels out in the numerator and denominator, and that the integral in the denominator equals $\sqrt{2\pi} \left( n + \frac{1}{\tau^2}\right)^{-1/2}$.  Hence $p(\theta \mid \bfy)$ correspond to a Gaussian distribution with mean $\frac{ n\bar{y} + \frac{\mu}{\tau^2}}{n + \frac{1}{\tau^2}}$ and variance $\left( n + \frac{1}{\tau^2}\right)^{-1}$!
+\end{itemize}
+}
+
+
+
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{The Bayesian approach to statistical inference}
+
+\begin{itemize}
+\item  {\bf Example (estimating the mean of a normal, cont):  }  Now that we have found the posterior distribution, we can use the posterior mean as a point estimator, i.e.,
+$$
+\tilde{\theta} = \E \left\{ \theta \mid \bfy \right\} = \frac{\int \theta p(\bfy \mid \theta) p(\theta) \dd \theta}{\int p(\bfy \mid \theta) p(\theta) \dd \theta} = \frac{ n\bar{y} + \frac{\mu}{\tau^2}}{n + \frac{1}{\tau^2}} .
+$$
+Besides being a ``natural'' measure of location of the posterior distribution, the posterior mean can be formally justified as begin the optimal estimator under squared error loss,
+\begin{align*}
+\E \left\{ \theta \mid \bfy \right\}  &=  \int_{-\infty}^{\infty} (\theta - \vartheta)^2 p(\theta \mid \bfy) \dd \theta  \\
+%
+& = \argmax_{\vartheta} \frac{\int (\theta - \vartheta)^2 p(\bfy \mid \theta) p(\theta) \dd \theta}{\int p(\bfy \mid \theta) p(\theta) \dd \theta}
+\end{align*}
+\end{itemize}
+}
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{The Bayesian approach to statistical inference}
+\begin{itemize}
+\item  {\bf Example (estimating the mean of a normal, cont):  }  Similarly, interval estimates can be obtained by computing highest posterior density intervals (shortest intervals that contain a given amount of posterior probability).  
+
+\vspace{3mm}
+
+In our running example, and for an interval with $1-\alpha$ coverage, this reduces to 
+{\small $$
+\left(  \frac{ n\bar{y} + \frac{\mu}{\tau^2}}{n + \frac{1}{\tau^2}} - z_{\alpha/2} \left\{ n + \frac{1}{\tau^2}\right\}^{-\frac{1}{2}}
+,
+\frac{ n\bar{y} + \frac{\mu}{\tau^2}}{n + \frac{1}{\tau^2}} + z_{\alpha/2} \left\{ n + \frac{1}{\tau^2}\right\}^{-\frac{1}{2}} \right) .
+$$}
+
+HPD intervals can be justified using utility functions too!
+\end{itemize}
+}
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{The Bayesian approach to statistical inference}
+
+\begin{itemize}
+\item The previous slide makes it clear that, generally speaking, once the model for the data and the priors/hyperpriors have been selected, performing Bayesian inference involves
+\begin{enumerate}
+\item Computing expectations of functions of the parameters with respect to the posterior distribution.
+\item Maximizing the corresponding expected utility functions.
+\end{enumerate}
+
+\vspace{2mm}
+
+\item We will mostly be focusing on cases where the second step is available in closed form (i.e., we assume simple, ``standard'' utility functions).
+\end{itemize}
+}
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{The Bayesian approach to statistical inference}
+
+\begin{itemize}
+\item As you might guess, even if the optimal decision (given the posterior) is known, computation is not always easy!  
+\begin{itemize}
+\item Historically, the main challenge in using Bayesian methods for real-world problems has been how to do computation beyond simple conjugate models.
+\item Numerical integration methods such as Gaussian quadrature scale very poorly (typically not useful if $\mbox{dim}(\bftheta) > 4$).
+\end{itemize}
+
+\vspace{2mm}
+
+\item Even today, in applied problems it is very common that some of the choices made when constructing the model will be driven by the computational constraints, e.g., the use of conjugate/conditionally conjugate priors.
+\end{itemize}
+}
+
+
+
+
+\frame{
+\sffamily
+\frametitle{A summary of Bayesian computational methods}
+\begin{center}
+\hspace{-1.1cm}
+\begin{tabular}{lr}
+\begin{minipage}{5.6cm}
+\centerline{\bf Monte-Carlo integration}
+\vspace{0.2cm}
+\begin{itemize}
+{\small \item Generate samples from $\bftheta^{(1)}, \ldots, \bftheta^{(B)} \sim p(\bftheta \mid \bfy)$.
+
+\item Approximate 
+$$
+\int h(\bftheta) p(\bftheta \mid \bfy) \dd \bftheta \approx \sum_{b=1}^{B} h \left(\bftheta^{(b)} \right)
+$$ 
+(WLLN / Ergodic theorem).
+
+\item Examples:  Adaptive Rejection Sampling, Importance Sampling, Markov chain Monte Carlo, Sequential Monte Carlo, Approximate Bayesian Computation.}
+\end{itemize}
+\end{minipage}
+%&
+\begin{minipage}{5.6cm}
+\centerline{\bf Approximation methods}
+\vspace{0.2cm}
+\begin{itemize}
+{\small \item Find a distribution $q(\bftheta)$ that is analytically tractable and is ``close'' to $p(\bftheta \mid \bfy)$.
+
+\item Approximate
+$$
+\int h(\bftheta) p(\bftheta \mid \bfy) \dd \bftheta \approx \int h(\bftheta) q(\bftheta) \dd \bftheta
+$$ 
+
+\item Examples: Laplace approximations, mean-field variational approximations, integrated nested Laplace
+approximations.}
+\end{itemize}
+\end{minipage}
+\end{tabular}
+\end{center}
+}
+
+
+
+\frame{
+\sffamily
+\frametitle{A summary of Bayesian computational methods}
+\begin{itemize}
+\item The previous methods are \textit{general}, in the sense that they allow for point and interval estimation, prediction and, in some cases (e.g., reversible jump MCMC, spike-and-slab priorss) variable selection/model comparison.
+
+\item In addition to them, there are methods that are \textit{specific} to either point estimation (typically finding posterior mode) or model selection (typically for computing marginal likelihoods and Bayes factors).
+\begin{itemize}
+\item Point estimation:  expectation-maximization (yes, it can be used in a Bayesian setting), (stochastic) conjugate gradient, feature selection.
+
+\item Bayes factors:  Harmonic Mean Estimation, Bridge Sampling, the marginal likelihood identity method of Chib, etc.
+\end{itemize}
+
+
+%MCMC methods for computing Bayes factors: a comparative review by: Cong Han, Bradley P. Carlin Journal of the American Statistical Association, Vol. 96 (September 2001), pp. 1122-1132  Key: citeulike:2113706
+\end{itemize}
+}
+
+
+\frame{
+\sffamily
+\frametitle{A (brief and selective) history of Bayesian computation}
+\begin{itemize}
+\item Until the 1970s focus was on conjugate priors (or limits of conjugate models, e.g., ``flat'' priors) to derive Bayesian analysis methods for ``standard'' models (e.g., multiple regression, ANOVA, variance-component models).  (For example, see \citealp{box2011bayesian}).
+
+\item In the 1980s there was an increase of interest in importance sampling techniques \citep{stewart1979multiparameter,van1980further,stewart1983bayesian,geweke1989bayesian} and 
+Laplace approximations \citep{tierney1986accurate,tierney1989approximate,tierney1989fully}.
+
+\item In the early 1990s the introduction of Gibbs sampling and Metropolis-Hastings algorithms in Bayesian statistics revolutionized the field \citep{gelfand1990sampling,smith1993bayesian}.  
+\end{itemize}
+}
+
+
+
+\frame{
+\sffamily
+\frametitle{A (brief and selective) history of Bayesian computation}
+\begin{itemize}
+\item At about the same time, sequential Monte Carlo methods were being introduced \citep{smith1992bayesian,gordon1993novel}.  These have become the most popular computational tool in Bayesian statistics.
+
+\item Hamiltonian methods started to appear in the statistics literature in the mid to late 1990s (e.g., \citealp{neal1996bayesian}).
+
+\item Approximate Bayesian computation (ABC) as we know it today was introduced in \cite{tavare1997inferring} to deal with problems in which evaluating the likelihood function is difficult or expensive, but simulating from it is easy.
+
+\item In the early 2000s variational approximations (e.g., \citealp{beal2003variational}) started to become extremely popular, particularly in the machine learning community.
+
+\item Integrated nested Laplace Approximations (INLA) were introduced in the late 2000s \citep{rue2009approximate}.
+
+\end{itemize}
+}
+
+
+
+\frame{
+\sffamily
+\frametitle{A (brief and selective) history of Bayesian computation}
+\begin{itemize}
+\item The rise of many of these approaches was made possible by the availability of cheap computers!
+\begin{itemize}
+\item Coding (including parallel computing) is nowadays a critical skill in Bayesian statistics.
+\end{itemize}
+
+\item Many of these approaches (MCMC, variational methods) were first developed in the physics literature!
+\begin{itemize}
+\item There is a lot to learn from other disciplines!
+\end{itemize}
+\end{itemize}
+}
+
+
+
+\frame{
+\sffamily
+\frametitle{What this course is about!}
+\begin{itemize}
+\item As you can see, the literature is extensive, so we will select a small number of topics to discuss:
+\begin{itemize}
+\item MCMC techniques, including reversible jump, adaptive Monte Carlo, and Hamiltonian methods.
+
+\item Methods for computing normalizing constants and Bayes factors.
+
+\item Sequential Monte Carlo algorithms for state-space models, but not population Monte Carlo.
+
+\item Laplace approximations and INLA
+
+\item Variational methods.
+
+
+\end{itemize}
+\end{itemize}
+}
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Bayesian paradigm to statistical inference}
+\begin{itemize}
+\item Generally speaking, I tend to prefer simulation-based techniques such as MCMC and SMC.
+\begin{itemize}
+\item Pros:  Intuitive, hierarchical extensions are reasonably easy, in principle you can control the accuracy of the approximation by increasing the number of samples.
+\item Cons:  Convergence/degeneracy need to be constantly checked, in many cases tuning parameters need to be selected, do not scale well with sample sizes.
+\end{itemize}
+
+\item Variational approximations can be useful.
+\begin{itemize}
+\item Pros:  They are fast!
+\item Cons:  You have no control over the quality of the approximation, inferences for functions involving parameters assumed independent in the approximation can be poor, in non-conjugate models a lot of ad-hoc approximations need to be introduced.
+\end{itemize}
+
+
+\end{itemize}
+}
+
+
+
+\frame{
+\sffamily
+\frametitle{Bayesian paradigm to statistical inference}
+\begin{itemize}
+\item ABC:
+\begin{itemize}
+\item Pros:  They work in problems where none of the other methods can be used.
+\item Cons:  Very large samples are typically needed, too many tuning parameters.
+\end{itemize}
+
+\item INLA:  I have limited practical experience with it.
+\begin{itemize}
+\item Pros:  Fast!
+\item Cons:  Limited control over the quality of the approximation, mostly limited to model with Gaussian random effete and low-dimensional hyperparameters. 
+\end{itemize}
+
+\item Mode finding algorithms.
+\begin{itemize}
+\item Pros:  Fast!
+\item Cons:  Only provide point estimates (although this can be mitigated when combined with other approaches such as IS). 
+\end{itemize}
+\end{itemize}
+
+\begin{center}
+\alert{There is no silver bullet!  Pick the technique that works better for your problem!}
+\end{center}
+}
+
+
+\section{Monte Carlo}
+
+\frame{
+\sffamily
+\frametitle{Monte Carlo Methods}
+\begin{itemize}
+\item Motivation
+\item Uniform pseudo-random number generation.
+\item Inversion.
+\item Transformation.
+\item Rejection.
+\end{itemize}
+}
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Why simulation based methods:  A motivating example}
+\begin{itemize}
+\item  To illustrate the power of simulation methods, consider the problem of estimating the diagnostic power of a medical test, defined as the probability of a positive result in the test for a diseased individual.
+$$
+\eta = \Pr\left( D \mid T \right) .
+$$
+
+\item $\eta$ is not directly observable.  However, we can easily obtain data on the prevalence $\theta$, the false positive rate $\alpha$ and the false negative rate $\beta$,
+\begin{align*}
+\theta &= \Pr(D) , &
+\alpha & = \Pr \left( T \mid \bar{D} \right)  , &
+\beta & = \Pr \left( \bar{T} \mid D \right) ,
+\end{align*}
+by sampling individuals from the general population, the population of healthy individuals, and the population of diseased individuals, respectively.
+\end{itemize}
+}
+
+
+
+
+\frame{
+\sffamily
+\frametitle{A motivating example}
+\begin{itemize}
+\item Note that $\eta$ is related to $\theta$, $\alpha$ and $\beta$ by the formula:
+$$
+\eta(\theta, \alpha, \beta) = \frac{(1-\beta) \theta}{(1-\beta) \theta + \alpha (1-\theta)}  .
+$$
+(This is just Bayes theorem!)
+
+\item {\bf Statistical model: } Assuming that individuals are sampled at random from the corresponding populations 
+\begin{align*}
+x_1 &= \left\{ \mbox{\parbox[c][][c]{6cm}{\# of diseased individuals in a sample of size $n_1$ of the general population}} \right\}  \sim \Bin(n_1, \theta)  , \\
+x_2 &= \left\{\mbox{\parbox[c][][c]{6cm}{\# of positive individuals in a sample of size $n_2$ of healthy individuals}}\right\} \sim \Bin(n_2, \alpha) , \\
+x_3 &= \left\{\mbox{\parbox[c][][c]{6cm}{\# of positive individuals in a sample of size $n_3$ of diseased individuals}}\right\} \sim \Bin(n_3, 1-\beta)  .
+\end{align*}
+
+\end{itemize}
+}
+
+
+
+\frame{
+\sffamily
+\frametitle{A motivating example}
+\begin{itemize}
+\item A frequentist approach:
+\begin{itemize}
+\item {\bf Point estimation:  }  The MLEs for $\theta$, $\alpha$ and $\beta$ are
+\begin{align*}
+\hat{\theta} &= \frac{x_1}{n_1} ,   &  \hat{\alpha} &= \frac{x_2}{n_2} ,   &  \hat{\beta} &= 1 - \frac{x_3}{n_3} .
+\end{align*}
+Hence, the MLE of $\eta$ is simply $\hat{\eta} = \frac{(1-\hat{\beta}) \hat{\theta}}{(1-\hat{\beta}) \hat{\theta} + \hat{\alpha} (1-\hat{\theta})}$.
+\vspace{1mm}
+\item {\bf Interval estimation:  }  Finding a pivot for $\eta$ is hard.  However, an asymptotic approximate interval can be constructed using the Delta method
+\begin{align*}
+\Var(\hat{\eta}) \approx  
+%
+\left[ \left. \nabla \eta(\theta,\alpha,\beta) \right|_{(\hat{\theta},\hat{\alpha},\hat{\beta})} \right]^T 
+\bfSigma \left[ \left. \nabla \eta(\theta,\alpha,\beta) \right|_{(\hat{\theta},\hat{\alpha},\hat{\beta})} \right]
+\end{align*}
+where $\bfSigma = \diag\left\{ \Var(\hat{\theta}), \Var(\hat{\alpha}), \Var(\hat{\beta})  \right\}$.
+
+\vspace{2mm}
+
+For small samples, parametric bootstrap could be used (which is a simulation-based computational tool common in frequentist statistics).
+\end{itemize}
+\end{itemize}
+}
+
+
+
+\frame{
+\sffamily
+\frametitle{A motivating example}
+\begin{itemize}
+\item A frequentist approach (cont):
+\begin{itemize}
+\item {\bf Interval estimation (cont):  }  Parametric bootstrap:  Once $\hat{\theta}$,$\hat{\alpha}$ and $\hat{\beta}$ have been computed, repeat the following steps for $b=1,\ldots,B$ where $B$ is ``large'':
+\begin{enumerate}
+\item Sample imaginary samples $x_1^{(b)} \sim \Bin(n_1, \hat{\theta})$, $x_2^{(b)} \sim \Bin(n_2, \hat{\alpha})$ and $x_3^{(b)} \sim \Bin(n_3, 1 - \hat{\beta})$.
+
+\item Compute $\tilde{\theta}^{(b)} = \frac{x_1^{(b)}}{n_1}$, $\tilde{\alpha}^{(b)} = \frac{x_2^{(b)}}{n_2}$ and $\tilde{\beta}^{(b)} = 1-\frac{x_3^{(b)}}{n_3}$ and let $\tilde{\eta}^{(b)} = \frac{(1-\tilde{\beta}^{(b)}) \tilde{\theta}^{(b)}}{(1-\tilde{\beta}^{(b)}) \tilde{\theta}^{(b)} + \tilde{\alpha}^{(b)} (1-\tilde{\theta}^{(b)})}$.
+\end{enumerate}
+
+\vspace{2mm}
+
+Then, an $\epsilon$-coverage confidence interval for $\eta$ is obtained by computing the $\epsilon/2$ and $1-\epsilon/2$ quantiles of the sample $\tilde{\beta}^{(1)} , \ldots, \tilde{\beta}^{(B)}$.
+\end{itemize}
+\end{itemize}
+}
+
+
+
+\frame{
+\sffamily
+\frametitle{A motivating example}
+\begin{itemize}
+\item A Bayesian approach:
+\begin{itemize}
+\item {\bf Priors:  }  Natural non-informative priors for this problem are $\theta \sim \bet\left( \frac{1}{2} , \frac{1}{2}\right)$, $\alpha \sim \bet\left( \frac{1}{2} , \frac{1}{2}\right)$ and $\beta \sim \bet\left( \frac{1}{2} , \frac{1}{2}\right)$.
+
+\vspace{2mm}
+
+\item {\bf Posteriors:  }  Because of independence and conjugacy we have 
+{\scriptsize \begin{multline*}
+p(\theta, \alpha, \beta \mid x_1, x_2, x_3) = \bet \left( \theta \mid \frac{1}{2} + x_1 , \frac{1}{2} + n_1 - x_1 \right) \\
+%
+\bet \left( \alpha \mid \frac{1}{2} + x_2 , \frac{1}{2} + n_2 - x_2 \right) 
+%
+\bet \left( \beta \mid \frac{1}{2} + n_3 - x_3 , \frac{1}{2} + x_3 \right)
+\end{multline*}}
+\item {\bf Posteriors (cont):  }  The posterior distribution for $(\theta,\alpha,\beta)$ is easy to obtain.  Since $\eta$ is a function of $(\theta,\alpha,\beta)$, its posterior can be obtained through transformations.  However, in this case, this is extremely messy ... Try it yourself.
+\end{itemize}
+\end{itemize}
+}
+
+
+
+\frame{
+\sffamily
+\frametitle{A motivating example}
+\begin{itemize}
+\item A Bayesian approach:
+\begin{itemize}
+\item {\bf Using a simulation-based approach:  }    Instead of trying to find a closed-form expression for $p(\eta \mid x_1, x_2, x_3)$, sample!
+
+\vspace{1mm}
+
+\begin{enumerate}
+\item For $b=1,\ldots,B$ generate $\theta^{(b)} \sim \bet \left( \frac{1}{2} + x_1 , \frac{1}{2} + n_1 - x_1 \right)$, $\alpha^{(b)} \sim \bet \left( \frac{1}{2} + x_2 , \frac{1}{2} + n_2 - x_2 \right)$ and $\beta^{(b)} \sim \bet \left( \frac{1}{2} + n_3 - x_3 , \frac{1}{2} + x_3 \right)$.
+
+\item For $b=1,\ldots,B$ let $\eta^{(b)} = \frac{(1-\beta^{(b)}) \theta^{(b)}}{(1-\beta^{(b)}) \theta^{(b)} + \alpha^{(b)} (1-\theta^{(b)})}$.
+\end{enumerate}
+
+\vspace{2mm}
+
+The density of the posterior distribution can be approximated using a histogram or a kernel density estimator.
+
+\vspace{1.5mm}
+
+Optimal estimates under a quadratic or absolute difference loss can be obtained as $\tilde{\eta}_{Q} = \frac{1}{B} \sum_{b=1}^{B} \eta^{(b)}$ and $\tilde{\eta}_{A} = \mbox{Med} \left\{ \eta^{(b)} \right\}$.
+
+\vspace{1.5mm}
+
+An $\epsilon$-probability credible interval for $\eta$ can be constructed by computing the $\epsilon/2$ and $1-\epsilon/2$ quantiles of $\eta^{(1)}, \ldots, \eta^{(B)}$.
+\end{itemize}
+\end{itemize}
+}
+
+
+\frame{
+\sffamily
+\frametitle{A motivating example}
+\begin{center}
+Let's run the scripts in the file \texttt{simulationmotivation.R}.
+\end{center}
+}
+
+
+\frame{
+\sffamily
+\frametitle{A motivating example}
+\begin{itemize}
+\item Even though a closed-form expression for the posterior distribution of $\eta$ is extremely hard to get, inferences for a given dataset are very easy to obtain using simulation!
+
+\item One way to think about simulation-based methods is as the Bayesian alternative to bootstrap.
+
+\item In this case we could use standard software to simulate random numbers from a beta distribution.
+\begin{itemize}
+\item What is \texttt{R} doing to generate random numbers?
+\item What do we do when \texttt{R} does not have a function to generate according to the distribution we are interested in?
+\end{itemize}
+\end{itemize}
+}
+

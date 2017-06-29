@@ -1,0 +1,262 @@
+\section{Model selection}
+
+\frame{
+\sffamily
+\frametitle{Model selection}
+
+\fix need transitional slide on model selection here
+
+}
+
+\frame{
+\sffamily
+\frametitle{The harmonic mean estimator}
+\begin{itemize}
+\item We are interested in approximating $m(\bfy) = \int p(\bfy \mid \bftheta) p(\bftheta) \dd \bftheta$ using a sample $\bftheta^{(1)} , \ldots, \bftheta^{(B)}$ from $p(\bftheta \mid \bfy)$.
+
+\item For this purpose, note that
+\begin{align*}
+\E_{\bftheta \mid \bfy} \left\{ \frac{1}{p(\bfy \mid \bftheta)} \right\} & = \int \frac{p(\bftheta \mid \bfy)}{p(\bfy \mid \bftheta)} \dd \bftheta \\
+%
+& = \int \frac{p(\bfy \mid \bftheta) \pi(\bftheta)}{m(\bfy) p(\bfy \mid \bftheta)} \dd \bftheta = \frac{1}{m(\bfy)}
+\end{align*}
+
+\item This suggests an estimator of the form
+\begin{align*}
+m(\bfy) \approx \frac{B}{\sum_{b=1}^{B} \frac{1}{p \left( \bfy \mid \bftheta^{(b)} \right)}} 
+\end{align*}
+
+\end{itemize}
+}
+
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{The harmonic mean estimator}
+\begin{itemize}
+\item The estimator is consistent (and unbiased for $1/m(\bfy)$).  \alert{However, it has infinite variance!}
+
+\vspace{1mm}
+
+\item In practice, the harmonic mean estimator works well only when the posterior is consistent with the prior.  Otherwise the error associated with the estimator can be very large unless $B$ is impractically large.
+
+\vspace{1mm}
+
+\item However, when that is the case, then the naive estimator
+$$
+m(\bfy) \approx \frac{1}{B}\sum_{b=1}^{B} p \left( \bfy \mid \bftheta^{(b)} \right)
+$$
+where $\bftheta^{(b)} \sim p(\bftheta)$ probably works quite well anyway!
+
+\vspace{1mm}
+
+\item \alert{Do not use the harmonic mean estimator!}
+\end{itemize}
+}
+
+
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Annealed importance sampling}
+\begin{itemize}
+\item Annealed importance sampling is an alternative to the harmonic mean estimator that has finite variance.
+
+\vspace{2mm}
+
+\item Starting with a sample from a distribution $f_n(\bftheta)$, we want to generate a weighted sample from $f_0(\bftheta)$.  If we are interested in the marginal likelihood then $f_n(\bftheta) \propto p(\bftheta)$ (the prior) and $f_0(\bftheta) \propto p(\bftheta \mid \bfy)$ (the posterior).
+
+\vspace{2mm}
+
+\item The weights associated with $f_0(\bftheta)$ can then be used to construct an estimate of the marginal likelihood.
+\end{itemize}
+}
+
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Annealed importance sampling}
+\begin{itemize}
+\item As first step, consider generating the sample $\bftheta^{(1)}, \ldots, \bftheta^{(B)}$ with weights $w^{(1)}, \ldots, w^{(B)}$ using regular importance sampling with $f_n$ as the proposal distribution, so that
+\begin{align*}
+\bftheta^{(b)} &\sim f_n    &    w^{(b)} &= \frac{f_0 \left( \bftheta^{(b)} \right)}{f_n \left( \bftheta^{(b)} \right)} .
+\end{align*}
+
+\item Note that $\frac{1}{B} \sum_{b=1}^{B} w^{(b)} \to \frac{\int f_n(\bftheta) \dd \bftheta}{\int f_0(\bftheta) \dd \bftheta}$ as $B \to \infty$ (this is the same identity behind Bridge Sampling, which we will study next).
+
+\item If $f_n(\bftheta) \propto p(\bftheta)$ and $f_0(\bftheta) \propto p(\bftheta \mid \bfy)$ then 
+\begin{align*}
+\frac{1}{B} \sum_{b=1}^{B} w^{(b)} &\to m(\bfy) &  B & \to \infty
+\end{align*}
+\end{itemize}
+}
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Annealed importance sampling}
+\begin{itemize}
+\item Typically $f_0$ and $f_n$ will be quite different from each other, so the previous importance sampling estimator will have poor properties.
+
+\vspace{2mm}
+
+\item We can improve performance by introducing a series of bridge distributions constructed as
+$$
+f_i (\bftheta) \propto f_n^{\beta_i} (\bftheta) f_0^{1 - \beta_i} (\bftheta)
+$$
+where $0 = \beta_0 < \beta_1 < \cdots < \beta_n = 1$ and performing SIS.
+
+\vspace{2mm}
+
+\item This leads to $n+1$ sets of weighted samples.  Denote the $i$-th one by $\bftheta^{(1)}_i, \ldots, \bftheta^{(B)}_i$ and the associated weights $w_i^{(1)}, \ldots, w_i^{(B)}$.  \alert{Note that for now $\bftheta^{(b)}_0 = \bftheta^{(b)}_1 = \cdots = \bftheta^{(b)}_n$}.
+\end{itemize}
+}
+
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Annealed importance sampling}
+\begin{itemize}
+\item To mitigate the degeneracy issues associated with SIS we further introduce a sequence of Markov transition kernels $T_1(\bftheta, \bftheta'), \ldots, T_{n-1}(\bftheta, \bftheta')$, where $T_i$ leaves $f_i (\bftheta)$ invariant.
+\begin{itemize}
+\item A common choice is a simple Metropolis-Hastings random walk kernel, but any other kernel that keeps the $i$-th bridge distribution invariant would be fine.
+\end{itemize}
+
+\vspace{2mm}
+
+\item The atoms are updated by sequentially sampling $\bftheta^{(b)}_{i+1} \sim T(\bftheta^{(b)}_{i}, \cdot)$.
+
+\vspace{2mm}
+
+\item A similar strategy is widely used in SMC algorithm (it sometimes refereed to as ``refreshing'' the sample).
+
+\vspace{2mm}
+
+\item Generally speaking, SMC schemes provide approximations to the marginal likelihoods as a byproduct.
+
+\end{itemize}
+}
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Bridge sampling}
+\begin{itemize}
+\item We are interested now in the ratio of two normalizing constants.
+
+\item Consider two densities/pmfs $p_i(\bftheta \mid \bfy) = \frac{f_i(\bfy \mid \bftheta) \pi_i(\bftheta)}{m_i(\bfy)}$ for $i=1,2$.
+\begin{align*}
+p_i(\bftheta \mid \bfy) &= \frac{f_i(\bftheta, \bfy)}{m_i(\bfy)} ,    &    p_2(\bftheta \mid \bfy) &= \frac{f_2(\bftheta, \bfy)}{m_1(\bfy)} ,.
+\end{align*}
+
+\item Note that
+\begin{align*}
+\int \frac{f_1(\bftheta \mid \bfy) \pi_1(\bftheta)}{f_2(\bftheta \mid \bfy)\pi_2(\bftheta)} p_2(\bftheta \mid \bfy) \dd \bftheta  & = \frac{m_1(\bfy)}{m_2(\bfy)}
+\end{align*}
+%\begin{align*}
+%\E_{p_2(\bftheta \mid \bfy) } \left\{ \frac{f_1(\bfy \mid \bftheta) \pi_1(\bftheta)}{f_2(\bfy \mid \bftheta) \pi_2(\bftheta)} \right\}  &=
+%\int \frac{f_1(\bftheta \mid \bfy) \pi_1(\bftheta)}{f_2(\bftheta \mid \bfy)\pi_2(\bftheta)} p_2(\bftheta \mid \bfy) \dd \bftheta \\
+%
+%& = \frac{m_1(\bfy)}{m_2(\bfy)}
+%\end{align*}
+\item This suggest an approximation of the form
+\begin{align*}
+\frac{m_1(\bfy)}{m_2(\bfy)} \approx \frac{1}{B} \sum_{b=1}^{B} \frac{f_1\left( \bfy \mid \bftheta^{(b)} \right) \pi_1\left( \bftheta^{(b)} \right)}{f_2 \left( \bfy \mid \bftheta^{(b)} \right) \pi_2\left( \bftheta^{(b)} \right)}  ,
+\end{align*}
+where $\bftheta^{(b)} \sim p_2(\bftheta \mid \bfy)$.
+\end{itemize}
+}
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Bridge sampling}
+\begin{itemize}
+\item The samples $\bftheta^{(1)}, \ldots, \bftheta^{(B)}$ can be generated with any procedure, including a direct sampler (e.g.,  rejection sampling), importance sampling, MCMC, or SMC.
+
+\item Note that to apply this procedure both $p_1$ and $p_2$ need to be defined on the same space.
+
+\item A generalization of this identify is
+$$
+\frac{m_1(\bfy)}{m_2(\bfy)} = \frac{E_2 \left\{ \alpha (\bftheta) f_1\left( \bfy \mid \bftheta \right) \pi_1\left( \bftheta \right) \right\} }{ E_1 \left\{ \alpha (\bftheta) f_2\left( \bfy \mid \bftheta \right) \pi_2\left( \bftheta \right) \right\} }  ,
+$$
+where 
+$\alpha(\bftheta)$ is an arbitrary function satisfying 
+$$
+0 < \left| \int \alpha(\bftheta) p_1(\bftheta \mid \bfy) p_2(\bftheta \mid \bfy) \dd \bftheta \right| < \infty.
+$$
+
+\end{itemize}
+}
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Bridge sampling}
+\begin{itemize}
+\item The resulting estimator takes the form  %equation 2.5
+\begin{align*}
+\frac{m_1(\bfy)}{m_2(\bfy)} & = 
+\frac{ \frac{1}{B_2} \sum_{i=1}^{B_2} \sum_{i=1}^{B_2} \alpha\left( \bftheta_2^{(b)} \right) p_1\left(\bfy \mid \bftheta_2^{(b)} \right) p_1\left( \bftheta_2^{(b)} \right) }
+%
+{ \frac{1}{B_1} \sum_{i=1}^{B_1} \sum_{i=1}^{B_1} \alpha\left( \bftheta_1^{(b)} \right) p_2\left(\bfy \mid \bftheta_1^{(b)} \right) p_2\left( \bftheta_1^{(b)} \right) }   ,
+\end{align*}
+where $\bftheta_1^{(b)} \sim p_1(\bftheta \mid \bfy)$ and $\bftheta_2^{(b)} \sim p_2(\bftheta \mid \bfy)$.
+
+\vspace{4mm}
+
+\item This estimator is consistent (but not unbiased!).
+\end{itemize}
+}
+
+
+
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Bridge sampling}
+\begin{itemize}
+
+\item The performance of the estimator depends on the choice of $\alpha( \bftheta )$.  The optimal choice of $\alpha(\bftheta)$ (in the sense of minimizing relative error) is
+$$
+\alpha^{*}(\bftheta) \propto \frac{1}{ \frac{B_1}{B_1 + B_2} p(\bftheta_1 \mid \bfy) + \frac{B_2}{B_1 + B_2} p(\bftheta_2 \mid \bfy) }  .
+$$
+
+\item This expression for  $\alpha^{*}(\bftheta)$ cannot be used directly, but a sequential procedure that approximates it recursively can be easily devised.
+
+\item The harmonic mean estimator can be obtained as a special case of this identity, but it corresponds to a choice of $\alpha(\bftheta)$ very far from being optimal.
+\end{itemize}
+}
+
+

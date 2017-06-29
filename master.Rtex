@@ -1,0 +1,220 @@
+% $Header: /cvsroot/latex-beamer/latex-beamer/doc/beamercolorthemeexample.tex,v 1.11 2004/10/07 20:53:04 tantau Exp $
+\documentclass{beamer}
+
+\usepackage{beamerthemesplit}
+\usepackage{graphicx,amsmath,natbib} %,apalike,cite
+\usepackage{color}
+\usepackage{subfigure}
+%\usepackage{graphicx,times,amsmath}
+
+\usetheme{Frankfurt}
+\usecolortheme{seahorse}
+\usecolortheme{rose}
+
+\newcommand{\bfalpha} {\boldsymbol{\alpha}}
+\newcommand{\bfbeta} {\boldsymbol{\beta}}
+\newcommand{\bfgamma} {\boldsymbol{\gamma}}
+\newcommand{\bfdelta} {\boldsymbol{\delta}}
+\newcommand{\bfepsilon} {\boldsymbol{\epsilon}}
+\newcommand{\bfxi} {\boldsymbol{\xi}}
+\newcommand{\bfpi} {\boldsymbol{\pi}}
+\newcommand{\bfmu} {\boldsymbol{\mu}}
+\newcommand{\bfsigma} {\boldsymbol{\sigma}}
+\newcommand{\bfeta} {\boldsymbol{\eta}}
+\newcommand{\bfzeta} {\boldsymbol{\zeta}}
+\newcommand{\bfvarphi} {\boldsymbol{\varphi}}
+\newcommand{\bflambda} {\boldsymbol{\lambda}}
+\newcommand{\bfpsi} {\boldsymbol{\psi}}
+\newcommand{\bfphi} {\boldsymbol{\phi}}
+\newcommand{\bfvarpsi} {\boldsymbol{\varpsi}}
+\newcommand{\bfnu} {\boldsymbol{\nu}}
+\newcommand{\bftheta} {\boldsymbol{\theta}}
+\newcommand{\bfTheta} {\boldsymbol{\Theta}}
+\newcommand{\bfOmega} {\boldsymbol{\Omega}}
+\newcommand{\bfSigma} {\boldsymbol{\Sigma}}
+\newcommand{\bfLambda} {\boldsymbol{\Lambda}}
+\newcommand{\bfchi} {\boldsymbol{\chi}}
+\newcommand{\bfvartheta} {\boldsymbol{\vartheta}}
+
+\newcommand{\bfs} {\mathbf{s}}
+\newcommand{\bfu} {\mathbf{u}}
+\newcommand{\bfv} {\mathbf{v}}
+\newcommand{\bfx} {\mathbf{x}}
+\newcommand{\bfy} {\mathbf{y}}
+\newcommand{\bfD} {\mathbf{D}}
+\newcommand{\bfP} {\mathbf{P}}
+\newcommand{\bfX} {\mathbf{X}}
+\newcommand{\bfM} {\mathbf{M}}
+\newcommand{\bfY} {\mathbf{Y}}
+
+\renewcommand{\Pr}{\mathsf{Pr}}
+\newcommand{\E}{\mathsf{E}}
+\newcommand{\Var}{\mathsf{Var}}
+\newcommand{\Cov}{\mathsf{Cov}}
+\newcommand{\Cor}{\mathsf{Cor}}
+\newcommand{\reals}{\mathbb{R}}
+\newcommand{\naturals}{\mathbb{N}}
+\newcommand{\ind}{\mathbb{I}}
+\newcommand{\dd}{\mbox{d}}
+
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\trace}{tr}
+\DeclareMathOperator{\argmax}{argmax}
+\DeclareMathOperator{\argmin}{argmin}
+
+\newcommand{\normal}{\mathsf{N}}
+\newcommand{\DP}{\mathsf{DP}}
+\newcommand{\Ber}{\mathsf{Ber}}
+\newcommand{\Dir}{\mathsf{Dir}}
+\newcommand{\Gam}{\mathsf{Gam}}
+\newcommand{\IGam}{\mathsf{IGam}}
+\newcommand{\Bin}{\mathsf{Bin}}
+\newcommand{\geo}{\mathsf{Geo}}
+\newcommand{\Exp}{\mathsf{Exp}}
+\newcommand{\Wis}{\mathsf{W}}
+\newcommand{\IWis}{\mathsf{IW}}
+\newcommand{\Poi}{\mathsf{Poi}}
+\newcommand{\bet}{\mathsf{beta}}
+\newcommand{\Mul}{\mathsf{Mult}}
+\newcommand{\GDir}{\mathsf{GDir}}
+\newcommand{\nDP}{\mathsf{nDP}}
+\newcommand{\HDP}{\mathsf{HDP}}
+\newcommand{\NIG}{\mathsf{NIG}}
+\newcommand{\PDP}{\mathsf{PDP}}
+\newcommand{\GP}{\mathsf{GP}}
+\newcommand{\PT}{\mathsf{PT}}
+\newcommand{\PU}{\mathsf{PU}}
+\newcommand{\SB}{\mathsf{SB}}
+\newcommand{\Uni}{\mathsf{Uni}}
+\newcommand{\Cauchy}{\mathsf{Cauchy}}
+
+\newcommand{\fix}{{\color{red}FIXME:}}
+
+%% for inline R code: if the inline code is not correctly parsed, you will see a message
+\newcommand{\rinline}[1]{SOMETHING WRONG WITH knitr}
+%% begin.rcode setup, include=FALSE
+% # include any code here you don't want to show up in the document,
+% # e.g., package and dataset loading
+%
+% require(ggplot2)
+% set.seed(0)
+%
+% # also a good place to set global chunk options
+%
+% library(knitr) # need this for opts_chunk command
+% opts_chunk$set(fig.width = 5, fig.height = 5, size = 'scriptsize', child.command = 'include')
+% # if we wanted chunks by default not to be evaluated
+% # opts_chunk$set(eval = FALSE)  
+%
+% source('utils.R')
+% library(methods)
+% library(nimble)
+%
+% read_chunk('nimbleIntro.R')
+% read_chunk('mh-gumbel.R')
+% read_chunk('mh-bliss.R')
+% read_chunk('diagnostics-bliss.R')
+% read_chunk('gibbs-litters.R')
+% read_chunk('blocked-litters.R')
+% read_chunk('mixture-faithful.R')
+%% end.rcode
+
+\title{Applied Bayesian Computational Methods}
+\author{Abel Rodr\'{\i}guez - UC Santa Cruz\\Christopher Paciorek - UC Berkeley}
+\date{JSM Baltimore \\ July, 2017}
+
+%%% NOTE: need to fix footer %%%
+
+\begin{document}
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+
+% knitr's syntax for \input when one has child docs with R chunks is a bit clunky...
+
+\begin{frame}
+\sffamily
+\frametitle{Partial to-do list}
+{\footnotesize
+\begin{itemize}
+\item Cox example in MCMC?
+\item CAR example in MCMC?
+\item additional data augmentation example with probit or robust?
+\item look at integration of Abel/Chris materials in slice, adaptive, other?
+\item GP example for HMC in Stan
+\item work on variable selection material and add Nimble example (Chris has nimbleFunction code ready from Perry's example -- either use Perry's simulated data example or use on Gelman-Hill child support dataset)
+\item replace SMC examples with NIMBLE code [will ask Nick to work on this - Abel's models are very similar to those in Nick's JSS submission]
+\item revisit GP example with VB in Stan?
+\item fix beamer footer
+\item discuss ordering of topics - Chris moved around some but not sure current ordering is ideal
+\end{itemize}
+}
+
+\end{frame}
+
+%% begin.rcode child='1-bayesIntro.Rtex'
+%% end.rcode
+
+%% begin.rcode child='2-nimbleIntro.Rtex'
+%% end.rcode
+
+%% begin.rcode child='3-mcmcIntro.Rtex'
+%% end.rcode
+
+%% begin.rcode child='4-metropolis.Rtex'
+%% end.rcode
+
+%% begin.rcode child='5-diagnostics.Rtex'
+%% end.rcode
+
+%% begin.rcode child='6-kernelMixture.Rtex'
+%% end.rcode
+
+%% begin.rcode child='7-mcmcStrategies.Rtex'
+%% end.rcode
+
+%% begin.rcode child='8-adaptive.Rtex'
+%% end.rcode
+
+%% begin.rcode child='9-auxiliary.Rtex'
+%% end.rcode
+
+%% begin.rcode child='10-slice.Rtex'
+%% end.rcode
+
+%% begin.rcode child='11-hmc.Rtex'
+%% end.rcode
+
+%% begin.rcode child='12-variableSeln.Rtex'
+%% end.rcode
+
+%% begin.rcode child='13-revJump.Rtex'
+%% end.rcode
+
+%% begin.rcode child='14-normConstants.Rtex'
+%% end.rcode
+
+%% begin.rcode child='15-impSample.Rtex'
+%% end.rcode
+
+%% begin.rcode child='16-smc.Rtex'
+%% end.rcode
+
+%% begin.rcode child='17-vb.Rtex'
+%% end.rcode
+
+%% begin.rcode child='18-laplace.Rtex'
+%% end.rcode
+
+\section{References}
+
+{\tiny
+\bibliographystyle{bka}
+\bibliography{bayesiancomputation}
+}
+
+\end{document}
+
+

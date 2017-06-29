@@ -1,0 +1,156 @@
+\section{NIMBLE}
+
+\begin{frame}[fragile] 
+\sffamily
+\frametitle{What is NIMBLE?}
+
+\begin{itemize}
+\item A flexible extension of the BUGS and JAGS systems
+\item A system for using algorithms on hierarchical statistical models
+\item A system for programming algorithms for hierarchical models
+\item A partial compiler for math, flow control, and related R code
+\end{itemize}
+
+At its most basic level, you can use NIMBLE in place of BUGS or JAGS. But even if you don't use algorithms other than MCMC or take advantage of the NIMBLE programming system, NIMBLE provides additional flexibility on top of BUGS or JAGS:
+
+\begin{itemize}
+\item User-defined distributions and functions for use in BUGS code
+\item Alternative parameterizations of distributions
+\item Flexibility in choosing the samplers to use in an MCMC
+\item Ability to arbitrarily block parameters in MCMC sampling
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}[fragile] 
+\sffamily
+\frametitle{The BUGS language}
+{\footnotesize
+
+BUGS is a declarative language for graphical (or hierarchical) models.
+\begin{itemize}
+\item Most programming languages are imperative, which means a series of
+commands will be executed in the order they are written.
+\item A declarative language like BUGS is more like building a machine before
+using it.
+\item Each line declares that a component should be plugged into
+the machine.
+\end{itemize}
+
+The machine in this case is a graphical model (in particular, a
+  \textit{directed acyclic graph}).  A \textit{node} (sometimes called
+a \textit{vertex}) holds one value, which may be a scalar or a vector.
+\textit{Edges} define the relationships between nodes.  A huge variety
+of statistical models can be thought of as graphs.  
+
+See also:
+\begin{itemize}
+\item Chapter 5 of the NIMBLE manual -- http://r-nimble.org/documentation
+\item the BUGS manual -- http://www.openbugs.net/Manuals/ModelSpecification.html
+\end{itemize}
+}
+
+\end{frame}
+
+\begin{frame}[fragile] 
+\sffamily
+\frametitle{Basic regression example in BUGS}
+
+\begin{columns}[T] % align columns
+\vspace{5mm}
+\begin{column}{.48\textwidth}
+
+%% begin.rcode regression-example, eval=FALSE, size='tiny'
+%% end.rcode
+
+\end{column}%
+
+\begin{column}{.48\textwidth}
+\includegraphics[width=2.5in]{plots/linearRegressionGraph-crop.pdf}
+\end{column}%
+\end{columns}
+
+Stochastic relationships are declared with $\sim$
+and deterministic relationships with \texttt{<-}.
+
+See Chapter 5 of the NIMBLE manual for available distributions, default and alternative parameterizations, and functions.
+
+We don't actually need the \texttt{pred\_y} line of code; instead:
+%% begin.rcode eval=FALSE
+y[i] ~ dnorm(intcpt + slope * x[i], sd = sigma)
+%% end.rcode
+
+\end{frame}
+
+\begin{frame}[fragile] 
+\sffamily
+\frametitle{GLMM example}
+
+{\footnotesize
+\begin{itemize}
+\item The litters model from the original 1995 BUGS software has data on rat pup survival for pups in 16 litters in each of two groups.
+\item Survival of the pups in a litter is governed by a survival probability specific  to the litter.
+\item Probabilities for each group are treated as being exchangeable, coming from a common beta distribution to induce shrinkage. 
+
+%% begin.rcode litters-code, eval=FALSE, size='tiny'
+%% end.rcode
+
+\item This is a GLMM structure (albeit without any explicit fixed effects, though they are implicit in the grouping).
+\item We could write an alternative version with a logistic link, normal random effects, and a group-based offset.
+\end{itemize}
+}
+\end{frame}
+
+\begin{frame}[fragile] 
+\sffamily
+\frametitle{Models in NIMBLE}
+{\scriptsize
+In WinBUGS and JAGS, the model and its MCMC are tied together. NIMBLE's approach is to separate the model and the algorithm(s) used with a model. This allows for:
+
+\begin{itemize}
+\item use of the model for other purposes, such as simulating from it in a simulation study,
+\item customization of MCMCs for a given model (e.g., changing samplers and blocking),
+\item use of other algorithms (e.g., SMC, MCEM, eventually INLA, VB, etc.) on a model, and
+\item programming new algorithms for use with any model.
+\end{itemize}
+
+Let's create a model from the BUGS code.
+}
+%% begin.rcode litters-model, eval=FALSE
+%% end.rcode
+
+\end{frame}
+
+\begin{frame}[fragile] 
+\sffamily
+\frametitle{Data vs. constants}
+
+\begin{itemize}
+\item data: observations that contribute to the likelihood (and in some cases predictors/covariates)
+\item constants: values that never change and must include any indexing limits (e.g., \texttt{n} in \texttt{for(i in 1:n)})
+\item inits: initial values for parameters (or in some cases predictors/covariates)
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}[fragile] 
+\sffamily
+\frametitle{'Operating' the model}
+{\small
+You can move values into and out of the model, simulate from the priors, and calculate prior densities ('logProbs'), as well as examining relationships in the model.
+
+%% begin.rcode litters-operating, eval=FALSE
+%% end.rcode
+
+}
+\end{frame}
+
+\begin{frame}[fragile] 
+\sffamily
+\frametitle{Discussion}
+
+How would we write a simple mixture of normals model for a simple vector of observations?
+
+\end{frame}
+

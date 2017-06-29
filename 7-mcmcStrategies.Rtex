@@ -1,0 +1,300 @@
+\frame{
+\sffamily
+\frametitle{General design rules for MH algorithms}
+\begin{itemize}
+\item  MH algorithms algorithms are highly modular.
+\item  There is an obvious trade-off between simplicity of implementation, speed, and mixing.  For example, component-wise algorithms that exploit Gibbs sampling steps are typically easier to code and require  little or no tuning, but they might mix very slowly.
+\end{itemize}
+}
+
+
+
+\frame{
+\sffamily
+\frametitle{General design rules for MH algorithms}
+\begin{itemize}
+\item Block as many parameters as you can!
+
+\item \fix Abel, I'd rather replace the above bullet with: Block highly-correlated parameters (when there is no strong dependence individual samplers can move further than a blocked Gaussian)
+
+\item Reparameterizing the model center or to make it orthogonal is usually helpful!  This is easy to do in the context of linear model, but not always so in other case (computing information matrices might provide hints).
+
+\item As a rule of thumb, you want to ``integrate out'' as many parameters as you can before attempting to use any Metropolis/Gibbs steps.
+However, introducing latent variables can greatly simplify algorithms and in some cases improve mixing.
+\end{itemize}
+}
+
+
+
+\frame{
+\sffamily
+\frametitle{Blocking}
+\begin{itemize}
+\item To better understand blocking, consider sampling from $p(\theta_1, \theta_2, \theta_3)$.  
+\begin{itemize}
+\item The ``obvious'' Gibbs sampling approach is to sample from the three full conditional distributions $p(\theta_1 \mid \theta_2, \theta_3)$, $p(\theta_2 \mid \theta_1, \theta_3)$ and $p(\theta_3 \mid \theta_1, \theta_2)$.
+
+\item Typically a better one is to decompose 
+$$
+p(\theta_1, \theta_2, \theta_3) = p(\theta_1) p(\theta_2, \theta_3 \mid \theta_1)
+$$ 
+and then sample either from the pair $p(\theta_1)$ and $p(\theta_2, \theta_3 \mid \theta_1)$ or (alternatively) from the trio $p(\theta_1 \mid \theta_2, \theta_3)$, $p(\theta_2 \mid \theta_3)$ and $p(\theta_3 \mid \theta_2)$.
+\end{itemize}
+\end{itemize}
+}
+
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Blocking}
+Consider sampling from the normal-Gamma distribution
+$$
+p(\theta_1, \theta_2, \theta_3) \propto \theta_1^{2} \exp\left\{ - \frac{\theta_1}{2} \left( 1 + \theta_2^2 + \theta_3^2 - \frac{2 \theta_2 \theta_3}{\sqrt{2}} \right) \right\} 
+$$
+\begin{itemize}
+\item The naive Gibbs sampler would sample from:
+\begin{itemize}
+\item $\theta_1 \mid \theta_2, \theta_3 \sim \Gam \left( 3 , \frac{1}{2} \left( 1 + \theta_2^2 + \theta_3^2 - \frac{2 \theta_2 \theta_3}{\sqrt{2}} \right) \right)$
+
+\item $\theta_2 \mid \theta_1, \theta_3 \sim \normal \left( \frac{\theta_3}{\sqrt{2}}, \theta_1^{-1} \right)$
+
+\item $\theta_3 \mid \theta_1, \theta_2 \sim \normal \left( \frac{\theta_2}{\sqrt{2}}, \theta_1^{-1} \right)$
+\end{itemize}
+\end{itemize}
+}
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Blocking}
+\begin{itemize}
+\item An improvement can be obtained by blocking $\theta_2$ and $\theta_3$,
+\begin{itemize}
+\item $\theta_1 \mid \theta_2, \theta_3 \sim \Gam \left( 3 , \frac{1}{2} \left(1 + \theta_2^2 + \theta_3^2 - \frac{2 \theta_2 \theta_3}{\sqrt{2}} \right) \right)$
+
+\item $\theta_2, \theta_3 \mid \theta_1 \sim \normal \left( 
+\left( \begin{matrix}
+0 \\ 0
+\end{matrix} \right)
+, \frac{1}{\theta_1}
+\left( \begin{matrix} 
+2 & \sqrt{2} \\
+\sqrt{2} & 2
+\end{matrix} \right)
+\right)$
+\end{itemize}
+
+\item An even better sampler can be obtained by integrating first over $(\theta_2, \theta_3)$ in addition to blocking
+\begin{itemize}
+\item $\theta_1 \sim \Gam(2, \frac{1}{2})$
+
+\item $\theta_2, \theta_3 \mid \theta_1 \sim \normal \left( 
+\left( \begin{matrix}
+0 \\ 0
+\end{matrix} \right)
+, \frac{1}{\theta_1 }
+\left( \begin{matrix} 
+2 & \sqrt{2} \\
+\sqrt{2} & 2
+\end{matrix} \right)
+\right)$
+\end{itemize}
+\end{itemize}
+}
+
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Blocking}
+
+\begin{tabular}{ll}
+Scheme 1 (no blocking)   &  Scheme 2 (blocking $\theta_2$ and $\theta_3$) \\
+\includegraphics[height=4.9cm,angle=0]{plots/blocking1.pdf}   &
+\includegraphics[height=4.9cm,angle=0]{plots/blocking2.pdf}
+\end{tabular}
+
+Code to generate these graphs is available \texttt{blocking.R}.
+}
+
+\frame{
+\sffamily
+\frametitle{Blocking}
+
+\fix I've left the above slides in as they pertain to marginalization as well as blocking and we should discuss whether the GLMM example below is sufficient in terms of points we want to make
+
+}
+
+\frame{
+\sffamily
+\frametitle{Blocking}
+
+{\footnotesize
+\begin{itemize}
+\item {\bf Example (litters GLMM):} We saw that univariate sampling worked poorly on the litters GLMM model. This is common in GLMMs -- the dependence between hyperparameters and random effects can impede mixing.
+
+Some strategies for random effects models:
+
+\begin{itemize}
+\item analytically integrate over random effects to reduce model dimensionality (not always feasible though feasible here)
+\item approximately integrate over random effects (e.g., INLA)
+\item expand the blocking to include the random effects
+\end{itemize}
+
+In the litters model, we could integrate the $p$'s out of the model and do block sampling on the hyperparameters.
+
+Alternatively, NIMBLE provides a \emph{cross-level} sampler that blocks hyperparameters with random effects when the random effects have a conjugate structure. This blocking is equivalent to marginalizing the $p$'s. This works much better than Metropolis-based blocking because the dependence is nonlinear.
+
+\end{itemize}
+}
+}
+
+
+\begin{frame}[fragile]
+\sffamily
+\frametitle{Blocking}
+
+\begin{itemize}
+\item {\bf Example (litters GLMM):}
+%% begin.rcode litters-blocked-config, size='tiny'
+%% end.rcode
+
+%% begin.rcode litters-blocked-mcmc, include=FALSE
+%% end.rcode
+
+\includegraphics[width=3in]{plots/blocked-litters.pdf}
+\end{itemize}
+\end{frame}
+
+\frame{
+\sffamily
+\frametitle{Centering}
+\begin{itemize}
+\item To illustrate the role of centering, consider a simple linear mixed model (random-intercept model).
+\begin{align*}
+y_{i,j} \mid \mu, \theta_i & \sim \normal(\eta + \theta_i, \sigma^2) ,  &   \eta &\sim \normal(0, \kappa^2 = \infty)  ,  &  \theta_i & \sim \normal(0, \tau^2) ,
+\end{align*}
+for $i=1, \ldots, I$ and $j=1, \ldots, J$.
+
+\item The full conditional distributions are
+\begin{align*}
+\theta_i \mid \eta &\sim \normal \left(  
+\frac{ \sum_{j=1}^{J} (y_{i,j} - \eta)/\sigma^2 }{\left( \frac{J}{\sigma^2} + \frac{1}{\tau^2} \right)}, 
+\left( \frac{J}{\sigma^2} + \frac{1}{\tau^2} \right)^{-1} 
+\right)  ,  \\
+%
+\eta \mid \theta_1, \ldots, \theta_I &\sim \normal \left(  
+\frac{ \sum_{i=1}^{I}\sum_{j=1}^{J} (y_{i,j} - \theta_i)/\sigma^2 }{\left( \frac{IJ}{\sigma^2} + \frac{1}{\kappa^2} \right)}, 
+\left( \frac{IJ}{\sigma^2} + \frac{1}{\kappa^2} \right)^{-1} 
+\right)  .
+\end{align*}
+\end{itemize}
+}
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Centering}
+\begin{center}
+\hspace{-0.8cm}
+\begin{tabular}{lr}
+\begin{minipage}{5cm}
+\vspace{0.2cm}
+\begin{itemize}
+\item We simulated data with $\eta = 0.8$, $\sigma^2 = 1$ and $\tau^2 = 2$, and ran the algorithm.
+\item $\theta_1$ and $\eta$ show high autocorrelation and slow mixing.
+\end{itemize}
+\end{minipage}
+%&
+\begin{minipage}{6cm}
+\includegraphics[height=5.7cm,angle=0]{plots/centering1.pdf}
+\end{minipage}
+\end{tabular}
+\end{center}
+}
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Centering}
+\begin{itemize}
+\item Instead, consider reparameterizing the model so that $\theta^{*}_i = \mu + \theta_i$ so that
+\begin{align*}
+y_{i,j} \mid \mu, \theta^{*}_i & \sim \normal(\theta^{*}_i, \sigma^2)  ,  &  \theta^{*}_i & \sim \normal(\eta, \tau^2) ,  &   \eta &\sim \normal(0, \kappa^2) .
+\end{align*}
+
+\item The full conditional distributions are
+\begin{align*}
+\theta^{*}_i \mid \eta &\sim \normal \left(  
+\frac{ \frac{\sum_{j=1}^{J} y_{i,j}}{\sigma^2} + \frac{\eta}{\tau^2}}{\left( \frac{J}{\sigma^2} + \frac{1}{\tau^2} \right)}, 
+\left( \frac{J}{\sigma^2} + \frac{1}{\tau^2} \right)^{-1} 
+\right)  ,  \\
+%
+\eta \mid \theta^{*}_1, \ldots, \theta^{*}_I &\sim \normal \left(  
+\frac{ \frac{\sum_{i=1}^{I} \theta^{*}_i}{\tau^2} }{\left( \frac{I}{\tau^2} + \frac{1}{\kappa^2} \right)}, 
+\left( \frac{I}{\tau^2} + \frac{1}{\kappa^2} \right)^{-1} 
+\right)  .
+\end{align*}
+\end{itemize}
+}
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Centering}
+\begin{center}
+\hspace{-0.8cm}
+\begin{tabular}{lr}
+\begin{minipage}{5cm}
+\vspace{0.2cm}
+\begin{itemize}
+\item We ran this MCMC for the same dataset as before and backtransformed the samples to get $\theta_i = \theta^{*}_i - \eta$.
+\item Mixing for $\theta_1$ and $\eta$ is quite good now.
+\item See NIMBLE code in \texttt{mh-centering.R}.
+\end{itemize}
+\end{minipage}
+%&
+\begin{minipage}{6cm}
+\includegraphics[height=5.7cm,angle=0]{plots/centering2.pdf}
+\end{minipage}
+\end{tabular}
+\end{center}
+}
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Centering}
+
+Exercise: experiment with changing the value of $\tau^2$ and see how that impacts the performance of the centered vs. uncentered samplers.
+
+\alert{Centering is not universally better, but is usually is!}
+
+There's been an interesting literature (somewhat) recently on understanding when the different approaches work better and on combining centering and non-centering \citep{yu2011center}. 
+
+\fix decide what to do with this slide - Abel formerly had results for other values of tau2; do we still want them? Might be overkill.
+
+}
+
+
+
+

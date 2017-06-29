@@ -1,0 +1,383 @@
+\section{Approximation methods}
+
+\frame{
+\sffamily
+\frametitle{Variational algorithms}
+\begin{itemize}
+
+\item In principle, we have a lot of freedom in choosing the functional form of $q_{\bfeta}$.  However, in practice we are limited by the need to have a tractable approximation, to compute the expectations $\E_{q}\left\{ \log \left[ q_{\bfeta}(\bftheta) \right] \right\}$ and $\E_{q}\left\{ \log \left[ p_{\bfeta}(\bftheta \mid \bfy) \right] \right\}$ and solve the associated maximization problem.
+
+\begin{itemize}
+\item As we will see in a second, this is easy in conditionally conjugate models (the same type of models where Gibbs sampling is straightforward) if we make some key assumption about $q_{\bfeta}(\bftheta)$.
+
+\item Extension to non-conjugate models are constantly being developed, but they are model specific and often rely on heuristics.
+\end{itemize}
+\end{itemize}
+}
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Variational algorithms in exponential families}
+\begin{itemize}
+\item So called \textit{mean field} variational algorithms, which use a fully factorized $q$, 
+\begin{align*}
+q_{\bfeta} (\bftheta) = \prod_{k=1}^{p} q_{k,\bfeta_k}(\theta_k)
+\end{align*}
+are extremely popular because of their tractability.
+ 
+\item As with the Gibbs sampler, we might not fully factorize $q_{\bfeta} (\bftheta)$ and instead work with blocks of parameters.
+
+\item Furthermore, for conditionally conjugate models that belong to the exponential family, it is natural to set $q_{k,\bfeta_k}(\theta_k)$ as a member of the conditional conjugate prior family.
+
+\item It is also natural in this case to use a conjugate gradient algorithm to solve the maximization problem, recursively updating each $\bfeta_i$ one at a time.
+\end{itemize}
+}
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Variational algorithms in exponential families}
+\begin{itemize}
+\item If all the previous assumptions are satisfied, the variational algorithm looks very much like a Gibbs sampler.  To be more specific, let the full conditional distribution for $\theta_k$ be of the form
+\begin{align*}
+p(\theta_k \mid \bftheta_{-k}, \bfy) \propto 
+%
+\exp\left\{ \sum_{l=1}^{L} g_{k,l} \left(\bftheta_{-k}, \bfy\right) t_l(\theta_k) - h(\theta_k)  \right\}  
+%- a\left( \mathbf{g}_k\left(\bftheta_{-k}, \bfy\right) \right)
+\end{align*}
+where $\bftheta_{-k} = (\theta_1, \ldots, \theta_{k-1}, \theta_{k+1}, \ldots, \theta_p)$ and $g_{k,1}\left(\bftheta_{-k}, \bfy\right), \ldots, g_{k,L}\left(\bftheta_{-k}, \bfy\right)$ are conditional sufficient statistics, and let the variational approximation be 
+$$
+q_{k,\eta_k} \left(\theta_{k}\right) \propto \exp\left\{ \sum_{l=1}^{L} \eta_{k,l} t_l(\theta_k) - a(\theta_k) \right\} ,
+$$
+then, $\hat{\eta}_{k,l} = \E_{q_{-k}} \left\{ g_{k,l} \left(\bftheta_{-k}, \bfy\right) \right\}$.  By iterating updates of this form we can develop a very fast computational algorithm!
+\end{itemize}
+}
+
+
+
+\frame{
+\sffamily
+\frametitle{Variational algorithms in exponential families}
+\begin{itemize}
+\item {\bf Example (Gaussian distributions with unknown mean and variance):}  Assume that data $y_1, \ldots, y_n$ are independent and identically distributed with $y_i \mid \theta, \sigma^2 \sim \normal(\theta, \sigma^2)$ and that we use independent priors $\theta \sim \normal (\mu, \tau^2)$ and $\sigma^2 \sim \IGam(a, c)$.  We derived a Gibbs sampler for this model earlier in this course:
+
+\begin{enumerate}
+\item Initialize $\tilde{\theta}^{(0)}$ and $\tilde{\sigma}^{2(0)}$.
+\item For $b=1,\ldots, B$ repeat
+\begin{enumerate}
+\item Sample $\tilde{\theta}^{(b)} \sim \normal \left( 
+\frac{\frac{n \bar{y}}{\tilde{\sigma}^{2(b-1)}} + \frac{\mu}{\tau^2}}{\frac{n}{\tilde{\sigma}^{2(b-1)}} + \frac{1}{\tau^2}}  ,
+%
+\frac{1}{\frac{n}{\tilde{\sigma}^{2(b-1)}} + \frac{1}{\tau^2}}
+\right)$.
+\item Sample $\tilde{\sigma}^{2(b)} \sim  \IGam \left( 
+a + \frac{n}{2} ,
+%
+c + \frac{1}{2} \sum_{i=1}^{n} \{y_i -\tilde{\theta}^{(b)}\}^2 
+\right)$.
+\end{enumerate}
+\end{enumerate}
+\end{itemize}
+}
+
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Variational algorithms in exponential families}
+\begin{itemize}
+\item {\bf Example (Gaussian distributions with unknown mean and variance):}  Consider now a variational algorithm for exactly the same problem.  A mean field variational approximation using tractable distributions that belong to the same families as the priors would be
+$$
+q (\theta, \sigma^2) = q_{(\eta_{\theta,1}, \eta_{\theta,2})}(\theta)  q_{(\eta_{\sigma^2,1}, \eta_{\sigma^2,2})}(\sigma^2) ,
+$$
+where
+\begin{align*}
+q_{(\eta_{\theta,1}, \eta_{\theta,2})}(\theta) &= \normal(\theta \mid \eta_{\theta,1}, \eta_{\theta,2})  
+\end{align*}
+and
+\begin{align*}
+q_{(\eta_{\sigma^2,1}, \eta_{\sigma^2,2})}(\sigma^2) &= \IGam(\sigma^2 \mid \eta_{\sigma^2,1}, \eta_{\sigma^2,2}).
+\end{align*}
+\end{itemize}
+}
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Variational algorithms in exponential families}
+\begin{itemize}
+\item {\bf Example (Gaussian distributions with unknown mean and variance):}  Under these choices, the variational parameters can be iteratively updated by letting
+\begin{align*}
+\eta^{(b)}_{\theta,1} &= \frac{ n \bar{y} \frac{\eta^{(b-1)}_{\sigma^2,1}}{\eta^{(b-1)}_{\sigma^2,2}} + \frac{\mu}{\tau^2}}{ n \frac{\eta^{(b-1)}_{\sigma^2,1}}{\eta^{(b-1)}_{\sigma^2,2}}  + \frac{1}{\tau^2}}  &
+%
+\eta^{(b)}_{\theta,2} &= \frac{1}{ n\frac{\eta^{(b-1)}_{\sigma^2,1}}{\eta^{(b-1)}_{\sigma^2,2}}  + \frac{1}{\tau^2}} &
+\end{align*}
+and
+\begin{align*}
+\eta^{(b)}_{\sigma^2,1} &= a + \frac{n}{2}  \\
+\eta^{(b)}_{\sigma^2,2} &= c + \frac{1}{2}  \sum_{i=1}^{n} \left\{ y_i^2 - 2y_i \eta^{(b)}_{\theta,1} + \eta^{(b)}_{\theta,2} + \eta^{2(b)}_{\theta,1} \right\}
+\end{align*}
+Compare these expressions against those for the Gibbs sampler!
+\end{itemize}
+}
+
+
+
+\frame{
+\sffamily
+\frametitle{Variational algorithms in exponential families}
+\begin{itemize}
+\item {\bf Example (Gaussian distributions with unknown mean and variance):}  The file \texttt{simpleVB.R} implements this algorithm.  Below is a comparison of the marginal posterior distributions.
+
+\includegraphics[height=5.2cm,angle=0]{plots/simpleVB_martheta.pdf}
+\includegraphics[height=5.2cm,angle=0]{plots/simpleVB_marsigma2.pdf}
+\end{itemize}
+}
+
+
+
+\frame{
+\sffamily
+\frametitle{Variational algorithms}
+\begin{itemize}
+\item {\bf Example (Gaussian distributions with unknown mean and variance):}  Comparing the joint distributions.
+\begin{center}
+\includegraphics[height=6.5cm,angle=0]{plots/simpleVB_joint.pdf}
+\end{center}
+\end{itemize}
+}
+
+
+
+\frame{
+\sffamily
+\frametitle{Variational algorithms in exponential families}
+\begin{itemize}
+\item The marginals are almost identical, but not surprisingly you can see more differences in the joint distribution.
+
+\item Variational Bayes works reasonably well in this case because the parameters are almost orthogonal a posteriori.  In situations where the parameters are highly correlated a posteriori the approximation can be very poor!
+\end{itemize}
+}
+
+
+
+\frame{
+\sffamily
+\frametitle{Variational algorithms in exponential families}
+\begin{itemize}
+\item {\bf Example (Mixture models):  }  Recall the two-component Gaussian mixture model where
+$$
+y_i \mid \xi_i, \theta_1, \sigma_1^2, \theta_2, \sigma_2^2 \sim \normal(y_i \mid \theta_{\xi_i}, \sigma_{\xi_i}^2) 
+$$
+with $\Pr(\xi_i = 1 \mid \omega) = \omega = 1 - \Pr(\xi_i = 2 \mid \omega)$, $\omega \sim \bet(1, 1)$, $\theta_i \sim \normal(\mu,\tau^2)$ and $\sigma^2_i \sim \IGam(a, c)$.
+
+\vspace{1mm}
+
+For the purpose of deriving the variational algorithm, the best way to write the joint distribution of data and parameters is
+\begin{multline*}
+\left[ \prod_{i=1}^{n} \prod_{k=1}^{2} \left\{ p(y_i \mid \theta_k, \sigma_k^2 \right\}^{\ind_{(\xi_i=k)}} \right]  \\
+%
+\left[ \omega^{1 + \sum_{i=1}^{n}\ind_{(\xi_i=1)}} (1-\omega)^{1+ \sum_{i=1}^{n}\ind_{(\xi_i=2)}} \right]  \\
+%
+\left[ \prod_{k=1}^{2} \normal(\theta_k \mid \mu, \tau^2)  \IGam(\sigma^2_k \mid a, c) \right]
+\end{multline*}
+\end{itemize}
+}
+
+
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Variational algorithms in exponential families}
+\begin{itemize}
+\item {\bf Example (Mixture models, cont):  }  The variational approximation in this case is given by
+$$
+q_{\gamma_1, \gamma_2}(\omega) \prod_{i=1}^{n} q_{\varpi_i}\left( \xi_i  \right) \prod_{k=1}^{2} q_{\eta_{k,1}, \eta_{k,2}}(\theta_k) \prod_{k=1}^{2} q_{\nu_{k,1}, \nu_{k,2}}\left( \sigma^2_k \right),
+$$
+where 
+\begin{align*}
+q_{\gamma_1, \gamma_2}(\omega) &= \bet(\omega \mid \gamma_1, \gamma_2) \\
+q_{\varpi_i}\left( \xi_i = 1  \right) &= 1- q_{\varpi_i}\left( \xi_i = 2  \right) = \varpi_i  ,  \\
+q_{\eta_{k,1}, \eta_{k,2}}(\theta_k)  &= \normal(\theta_k \mid \eta_{k,1}, \eta_{k,2})  ,  \\
+q_{\nu_{k,1}, \nu_{k,2}}\left( \sigma^2_k \right) &= \IGam\left( \sigma^2_k \mid \nu_{k,1}, \nu_{k,2} \right)  .
+\end{align*}
+\end{itemize}
+}
+
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Variational algorithms in exponential families}
+\begin{itemize}
+\item {\bf Example (Mixture models, cont):  }  The corresponding variational updates become
+\begin{itemize}
+\item For $\omega$,
+{\scriptsize \begin{align*}
+\gamma_1^{(b)}  &= 1 + \sum_{i=1}^{n} \varpi_i^{(b-1)}  ,    &  \gamma_2^{(b)}  &= 1 + n - \sum_{i=1}^{n} \varpi_i^{(b-1)}  .
+\end{align*}}
+
+\item For $\theta_1$,
+{\scriptsize \begin{align*}
+\eta_{1,1}^{(b)}  &= \frac{\frac{\nu_{1,1}^{(b-1)}}{\nu_{1,2}^{(b-1)}} \sum_{i=1}^{n} y_i \varpi_i^{(b-1)} + \frac{\mu}{\tau^2}}
+{\frac{\nu_{1,1}^{(b-1)}}{\nu_{1,2}^{(b-1)}} \sum_{i=1}^{n} \varpi_i^{(b-1)} + \frac{1}{\tau^2}}   ,   
+%
+&  \eta_{1,2}^{(b)}  &= \frac{1}
+{\frac{\nu_{1,1}^{(b-1)}}{\nu_{1,2}^{(b-1)}} \sum_{i=1}^{n} \varpi_i^{(b-1)} + \frac{1}{\tau^2}}  .
+\end{align*}}
+The formulas for $\theta_2$ are analogous but replace $\varpi_i$ with $1-\varpi_i$.
+\end{itemize}
+\end{itemize}
+}
+
+
+\frame{
+\sffamily
+\frametitle{Variational algorithms in exponential families}
+\begin{itemize}
+\item {\bf Example (Mixture models, cont):  }  
+\begin{itemize}
+\item For $\sigma_1^2$,
+{\scriptsize \begin{align*}
+\nu_{1,1} &= a + \frac{1}{2} \sum_{i=1}^{n} \varpi^{(b-1)}_i    \\
+\nu_{1,2} &= c + \frac{1}{2} \sum_{i=1}^{n} \varpi^{(b-1)}_i \left\{  y_i^2 - 2 y_i \eta_{1,1}^{(b)} + \eta_{1,2}^{(b)} + \eta_{1,1}^{2(b)} \right\}
+\end{align*}}
+The formulas for $\sigma^2_2$ are analogous but replace $\varpi_i$ with $1-\varpi_i$.
+
+\vspace{1.5mm}
+
+\item For $\xi_i$,
+{\scriptsize \begin{multline*}
+\varpi^{(b)}_i \propto \exp \left\{ \Psi \left( \gamma_1^{(b)} \right) - \Psi \left( \gamma_1^{(b)}  +\gamma_2^{(b)} \right) 
+%
++ \frac{1}{2} \left[ \Psi \left( \nu_{k,1}^{(b)} \right) - \log \nu_{k,2}^{(b)} \right]  \right.  \\
+%
+\left. 
+-\frac{\nu_{k,1}^{(b)}}{2 \nu_{k,2}^{(b)}} \left[ y_i^2 - 2y_i \eta_{k,1}^{(b)} +  \eta_{k,2}^{(b)} + \eta_{k,1}^{2(b)}
+%
+\right]
+\right\}
+\end{multline*}}
+where $\Psi$ denotes the digamma function.
+\end{itemize}
+\end{itemize}
+}
+
+
+
+\frame{
+\sffamily
+\frametitle{Variational algorithms in exponential families}
+\begin{itemize}
+\item {\bf Example (Mixture models, cont):  }  The algorithm can be naturally extended to mixtures with a larger number of components, and even to nonparametric mixtures.  
+
+\vspace{1mm}
+
+The following two slides show results for a slightly more convoluted location scale mixture under a finite Dirichlet process mixture model \cite{BlJo06} for the \texttt{galaxy} dataset \cite{roeder1990density} (available in the \texttt{DPpackage} library for \texttt{R}).  They illustrate some of the disadvantages of variational approximation when compared to ``equivalent'' Gibbs sampling algorithms.
+\end{itemize}
+}
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Gibbs vs.\ variational algorithms for location mixtures of normals}
+Density estimates
+\begin{center}
+\begin{tabular}{cc}
+Blocked Gibbs sampler  &  Variational approximation \\
+\includegraphics[height=5.2cm,angle=0]{plots/densityest_galaxy_lmfs_blockedgibbs.pdf}  &
+\includegraphics[height=5.2cm,angle=0]{plots/densityest_galaxy_lmfs_variational.pdf}
+\end{tabular}
+\end{center}
+}
+
+
+\frame{
+\sffamily
+\frametitle{Gibbs vs.\ variational algorithms for location mixtures of normals}
+\begin{center}
+Pairwise clustering probabilities
+\begin{tabular}{cc}
+Blocked Gibbs sampler  &  Variational approximation \\
+\includegraphics[height=5.2cm,angle=0]{plots/pairwise_galaxy_lmfs_blockedgibbs.pdf}  &
+\includegraphics[height=5.2cm,angle=0]{plots/pairwise_galaxy_lmfs_variational.pdf}
+\end{tabular}
+\end{center}
+}
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Variational algorithms}
+
+{\bf Suggested exercise:  } Develop and implement a variational algorithm for a Gaussian random effects model where $y_{i,j} \mid \mu, \theta_i, \sigma^2 \sim \normal(\mu + \theta_i, \sigma^2)$, $\theta_i \mid \tau^2 \sim \normal(0, \tau^2)$, $\mu \sim \normal(\eta, \kappa^2)$, $\sigma^2 \sim \IGam(a_{\sigma}, c_{\sigma})$ and $\tau^2 \sim \IGam(a_{\tau}, b_{\tau})$.
+}
+
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Some concluding remarks about variational algorithms}
+\begin{itemize}
+\item You could try to maximize $K(q || p)$ instead of $K(p || q)$.  This leads to \textit{expectation propagation} algorithms, which are also popular in the machine learning literature.  I will not discuss them further here.
+
+\item The minimization of $K(p || q)$ can also be justified as maximizing the bound on the log marginal likelihood:
+\begin{align*}
+\log p(\bfy) \ge \E_{q} \left\{ \log p(\bftheta, \bfy) \right\} - \E_q \left\{ \log q_{\bfeta}(\bftheta) \right\}
+\end{align*}
+The gap in the bound is precisely the divergence between $q_{\bfeta}$ and the true posterior.
+
+
+\end{itemize}
+}
+
+
+
+\frame{
+\sffamily
+\frametitle{TMP}
+
+\fix can probably do whatever example we did for HMC using VB in Stan (or discuss whether to do one of the mixture examples in Stan); might leave Stan out of this section to save work and time
+
+}
+
+
+\frame{
+\sffamily
+\frametitle{Some concluding remarks about variational algorithms}
+\begin{itemize}
+\item In my experience, for complex models variational algorithms tend to get stuck in local modes.  It is very important to perform multiple runs from \textit{overdispersed} initial values and verify that the algorithm converges to the same set of values.  If not, one way to select among multiple solutions is to monitor the free energy,
+$$
+\int \log \frac{p(\bfy, \bftheta)}{q_{\bfeta}(\bftheta)} q_{\bfeta}(\bftheta) \dd \bftheta
+$$
+and select the set of parameters that minimizes the bound (note that the free energy involves the joint, not the posterior, so it is usually easy to compute!).
+\end{itemize}
+}
+
+

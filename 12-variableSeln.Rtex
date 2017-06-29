@@ -1,0 +1,218 @@
+\frame{
+\sffamily
+\frametitle{Variable selection}
+
+\fix integrate the various variable selection slides that follow, which were pulled from various chunks in Abel's original material
+
+}
+
+\frame{
+\sffamily
+\frametitle{A brief review of Markov chains}
+\begin{itemize}
+\item {\bf Example (variable selection in linear models):}  Consider a linear model of the form $\bfy = \bfX \bftheta + \bfepsilon$ with $\bfepsilon \sim \normal( \mathbf{0}, \sigma^2 \mathbf{I} )$, $\mbox{dim} \{ \bfy \} = n$, and $\mbox{dim} \{ \bftheta \} = p$.  We are interested in selecting a subset of the columns of $\bfX$ that explain the response $\bfy$.  
+
+\vspace{1mm}
+
+Hence, since we have a total of $p$ variables, we need to select among $2^p$ models.  Each of these models can be represented using a vector $\bfgamma = (\gamma_1, \ldots, \gamma_p)$ where $\gamma_k = 1$ if variable $k$ is in the model, and $\gamma_k = 0$ otherwise.
+
+\vspace{1mm}
+
+To address this problem from a Bayesian perspective we need to compute the probability associated with each model.  To do so we need a prior distribution $p(\bftheta, \sigma^2, \bfgamma)$ which we will conveniently breakdown as $p(\bftheta \mid \sigma^2  \bfgamma)  p(\sigma^2 \mid \bfgamma) p( \bfgamma)$.
+\end{itemize}
+}
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{A brief review of Markov chains}
+\begin{itemize}
+\item {\bf Example (variable selection in linear models, cont):}  For the regression coefficients, we focus on priors of the form 
+$$
+\bftheta \mid \sigma^2 , \bfgamma \sim \normal \left(\bftheta_{\bfgamma} \mid \mathbf{0}, \sigma^2 
+\left\{ \bfX_{\bfgamma}^{T}\bfX_{\bfgamma} \right\}^{-1} \right) \prod_{k : \gamma_k = 0} \delta_{0}(\theta_k)  ,
+$$
+where $\bfX_{\bfgamma}$ denotes the matrix composed of the columns of $\bfX$ for which associated with variables that have $\gamma_k$, and $\delta_0(\cdot)$ denotes the degenerate measure at $0$.
+
+\vspace{1mm}
+
+For the variance we have $\sigma^2 \mid \bfgamma \sim \IGam(a,b)$ (which is independent of $\bfgamma)$.
+
+\vspace{1mm}
+
+Finally, we set $p(\bfgamma) = \frac{\Gamma(1 + \sum_{k=1}^{p} \gamma_i) \Gamma(1 + p - \sum_{k=1}^{p} \gamma_i)}{\Gamma(p + 2)}$, which is a Beta-Bernoulli prior.
+
+\end{itemize}
+}
+
+
+
+
+\frame{
+\sffamily
+\frametitle{A brief review of Markov chains}
+\begin{itemize}
+\item {\bf Example (variable selection in linear models, cont):}  Note that in this analysis we are really interested in the marginal posterior $p(\bfgamma \mid \bfy)$, and we can think of $\bftheta$ and $\sigma^2$ are ``nuisance'' parameters. Integrating them out we have
+
+{\scriptsize
+\begin{multline*}
+p(\bfy \mid \bfgamma) = \left(\frac{1}{2\pi}\right)^{\frac{n}{2}} \left|
+\mathbf{I} + \bfX_{\bfgamma} \left(\bfX_{\bfgamma}^{T} \bfX_{\bfgamma}\right)^{-1} \bfX_{\bfgamma}^T \right|^{-\frac{1}{2}} \\
+%  
+\frac{b^a}{\Gamma(a)}
+\frac{\Gamma \left( a + \frac{n}{2} \right)}
+{\left( b + \frac{\bfy^T \left\{ \mathbf{I} + \bfX_{\bfgamma} \left(\bfX_{\bfgamma}^{T} \bfX_{\bfgamma}\right)^{-1} \bfX_{\bfgamma}^T \right\}^{-1}\bfy}{2} \right)^{a + \frac{n}{2}}}  ,
+\end{multline*}
+}
+and the posterior distribution is simply
+$$
+p(\bfgamma \mid \bfy) = \frac{p(\bfy \mid \bfgamma)p(\bfgamma)}{\sum_{\bfgamma'}p(\bfy \mid \bfgamma')p(\bfgamma')} .
+$$
+
+\end{itemize}
+}
+
+
+
+\frame{
+\sffamily
+\frametitle{A brief review of Markov chains}
+\begin{itemize}
+\item {\bf Example (variable selection in linear models, cont):}  Because $\bfgamma$ can only take a finite number of values, getting these posterior probabilities should be straightforward:
+\begin{itemize}
+\item This is true when $p$ is relatively small (say $p \le 20$).  In that case the number of models is manageable (with $p=20$ we have 1,048,576 models), and we can actually compute (and store) the probabilities for each model with the resources available in regular computers.
+
+\item However, when $p$ is large we cannot do that anymore (roughly, every 10 extra variables you add multiplies the number of models by 1,000, so you can easily run out of atoms in the universe in a typical problem in genetics ...) 
+\end{itemize}
+
+\vspace{1mm}
+
+Hence, even in discrete problems with an ``analytical'' solutions you might want to use simulations to make the problem more manageable.
+
+\end{itemize}
+}
+
+
+\frame{
+\sffamily
+\frametitle{The Metropolis-Hastings algorithm}
+\begin{itemize}
+\item {\bf Example (variable selection in linear models, cont):  } Consider again the variable selection problem discussed as motivation for working with MCMC algorithms on discrete spaces.  A couple of options for constructing a Metropolis-Hasting algorithm:
+\begin{itemize}
+\item A simple random walk proposal can be constructed by choosing one entry $\gamma_k$ of $\bfgamma$ uniformly at random and generating a new model by setting 
+$$
+\bfvartheta = (\gamma_1, \ldots, \gamma_{k-1}, 1 - \gamma_k, \gamma_{k+1}, \ldots, \gamma_{p})
+$$
+\item An independent proposal could be constructed by generating a new model by randomly sampling from a uniform distribution over model, i.e., by letting $\vartheta_k \sim \Ber(1/2)$ independently for each $k$.
+\end{itemize}
+\end{itemize}
+}
+
+
+
+\frame{
+\sffamily
+\frametitle{The Metropolis-Hastings algorithm}
+\begin{itemize}
+\item {\bf Example (variable selection in linear models, cont):  } Note that the acceptance probability is the same in both cases!
+$$
+\rho(\bfvartheta, \bfgamma) = \min \left\{ 1, \frac{p(\bfvartheta \mid \bfy)}{p(\bfgamma \mid \bfy)} \right\} .
+$$
+
+Hence, any proposed model with a higher posterior probability than the current one will be accepted.  However, unlike in a greedy search, models that are somewhat worse than the current model might still be accepted.
+\end{itemize}
+}
+
+
+\frame{
+\sffamily
+\frametitle{The Metropolis-Hastings algorithm}
+\begin{itemize}
+\item {\bf Example (variable selection in linear models, cont):  }  The random walk proposal is very ``local''.  In large spaces it will tend have a relatively high acceptance rate and to explore only models that are relatively close to the initial model.
+
+\vspace{1mm}
+
+On the other hand, making proposal uniformly at random allows us to explore the space widely, but will typically lead to rejections.
+
+\vspace{1mm}
+
+Both proposals can be improved upon.
+\begin{itemize}
+\item The random walk proposal would consider swapping more than one entry of $\bfgamma$ at a time. 
+
+\item The uniform proposal could use different probabilities for each variable (which could be chosen in some ad-hoc manner, e.g., by running a regular regression and computing p-values).
+\end{itemize}
+
+\end{itemize}
+}
+
+
+
+\frame{
+\sffamily
+\frametitle{The Metropolis-Hastings algorithm}
+\begin{itemize}
+\item {\bf Example (variable selection in linear models, cont):  } Consider again the variable selection problem discussed as motivation for working with MCMC algorithms on discrete spaces.  A couple of options for constructing a Metropolis-Hasting algorithm:
+\begin{itemize}
+\item A simple random walk proposal can be constructed by choosing one entry $\gamma_k$ of $\bfgamma$ uniformly at random and generating a new model by setting 
+$$
+\bfvartheta = (\gamma_1, \ldots, \gamma_{k-1}, 1 - \gamma_k, \gamma_{k+1}, \ldots, \gamma_{p})
+$$
+\item An independent proposal could be constructed by generating a new model by randomly sampling from a uniform distribution over model, i.e., by letting $\vartheta_k \sim \Ber(1/2)$ independently for each $k$.
+\end{itemize}
+\end{itemize}
+}
+
+
+
+\frame{
+\sffamily
+\frametitle{The Metropolis-Hastings algorithm}
+\begin{itemize}
+\item {\bf Example (variable selection in linear models, cont):  } Note that the acceptance probability is the same in both cases!
+$$
+\rho(\bfvartheta, \bfgamma) = \min \left\{ 1, \frac{p(\bfvartheta \mid \bfy)}{p(\bfgamma \mid \bfy)} \right\} .
+$$
+
+Hence, any proposed model with a higher posterior probability than the current one will be accepted.  However, unlike in a greedy search, models that are somewhat worse than the current model might still be accepted.
+\end{itemize}
+}
+
+
+\frame{
+\sffamily
+\frametitle{The Metropolis-Hastings algorithm}
+\begin{itemize}
+\item {\bf Example (variable selection in linear models, cont):  }  The random walk proposal is very ``local''.  In large spaces it will tend have a relatively high acceptance rate and to explore only models that are relatively close to the initial model.
+
+\vspace{1mm}
+
+On the other hand, making proposal uniformly at random allows us to explore the space widely, but will typically lead to rejections.
+
+\vspace{1mm}
+
+Both proposals can be improved upon.
+\begin{itemize}
+\item The random walk proposal would consider swapping more than one entry of $\bfgamma$ at a time. 
+
+\item The uniform proposal could use different probabilities for each variable (which could be chosen in some ad-hoc manner, e.g., by running a regular regression and computing p-values).
+\end{itemize}
+
+\end{itemize}
+}
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Variable selection}
+
+\fix figure out if we want to insert a NIMBLE example of using MH for variable selection
+
+}
+
+

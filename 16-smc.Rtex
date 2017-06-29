@@ -1,0 +1,524 @@
+
+\frame{
+\sffamily
+\frametitle{Sequential Importance Sampling}
+
+\fix replace Abel's custom SMC implementations with NIMBLE code (Chris will probably ask Nick to do this)
+
+}
+
+
+
+\frame{
+\sffamily
+\frametitle{Sequential Importance Sampling}
+\begin{itemize}
+\item When $\bftheta$ is high dimensional, constructing a good instrumental distribution can be very hard.  
+
+\item One option is to construct it in pieces by (for example) writing
+\begin{multline*}
+g(\bftheta \mid \bfy) = g(\theta_T \mid \theta_{T-1}, \theta_{T-2}, \ldots, \theta_{1}, \bfy) \\
+%
+g(\theta_{T-1} \mid \theta_{T-2}, \ldots, \theta_{1}, \bfy) \cdots  g(\theta_{2} \mid \theta_{1}, \bfy) g(\theta_1\mid \bfy)
+\end{multline*}
+
+\item This type of sequential construction is particularly useful when the posterior distribution admits certain types of factorizations..
+%\item Often this get simplified to something like 
+%\begin{multline*}
+%g(\bftheta \mid \bfy) = g(\theta_T \mid \theta_{T-1}, \bfy) \\
+%
+%g(\theta_{T-1} \mid \theta_{T-2}, \bfy) \cdots  g(\theta_{2} \mid \theta_{1}, \bfy) g(\theta_1\mid \bfy)
+%\end{multline*}
+%(Note that we can construct a ``Makovian'' $g$ even if neither the prior nor likelihood imply such a structure).
+\end{itemize}
+}
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Sequential Importance Sampling}
+\begin{itemize}
+\item More specifically, consider a model where
+$$
+p(\bftheta_{1:T} \mid \bfy_{1:T}) \propto \prod_{t=1}^{T} p\left(\bfy_t \mid \bfy_{1:(t-1)} , \bftheta_{1:t} \right)
+%
+p\left(\bftheta_t \mid \bftheta_{1:(t-1)}  \right)
+$$
+and $\bfy_{1:t} = (\bfy_1, \ldots, \bfy_{t})$ and $\bftheta_{1:t} = (\bftheta_1, \ldots, \bftheta_{t})$. 
+
+\vspace{2mm}
+
+\item The key is that $p\left(\bfy_t \mid \bfy_{1:(t-1)} , \bftheta_{1:t} \right)$ does not depend on $\bftheta_{(t+1):T}$.  (Not every model satisfies this.)
+\end{itemize}
+}
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Sequential Importance Sampling}
+\begin{itemize}
+\item Start by using importance sampling to construct
+$$
+\hat{p}(\bftheta_1 \mid \bfy_1) = \sum_{b=1}^{B} \omega_1^{(b)} \delta_{\hat{\bftheta}_1^{(b)}}
+$$
+where $\hat{\bftheta}_1^{(1)}, \ldots, \hat{\bftheta}_1^{(B)}$ is an idd sample from $g(\bftheta_1 \mid \bfy)$ and 
+$$
+\omega_1^{(b)}  \propto \frac{p\left(\bfy_1 \mid \hat{\bftheta}^{(b)}_1\right) p\left(\hat{\bftheta}^{(b)}_1\right)}{g\left(\hat{\bftheta}^{(b)}_1 \mid \bfy \right)}
+$$
+\end{itemize}
+}
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Sequential Importance Sampling}
+\begin{itemize}
+\item A particle representation for $p(\bftheta_2, \bftheta_1 \mid \bfy_2, \bfy_1)$ can now be constructed by letting
+$$
+\hat{p}(\bftheta_2, \bftheta_1 \mid \bfy_2, \bfy_1) = \sum_{b=1}^{B} \omega_2^{(b)} \delta_{\left(\hat{\bftheta}_1^{(b)}, \hat{\bftheta}_2^{(b)}\right)}  , 
+$$
+where $\hat{\bftheta}_2^{(b)} \sim g\left(\bftheta_2 \mid \hat{\bftheta}_1^{(b)}, \bfy \right)$ and
+$$
+\omega_2^{(b)}  \propto \omega_1^{(b)} \frac{p\left(\bfy_2 \mid \bfy_1, \hat{\bftheta}^{(b)}_2, \hat{\bftheta}^{(b)}_1 \right) p\left(\hat{\bftheta}^{(b)}_2 \mid \hat{\bftheta}^{(b)}_1 \right)}{g\left(\hat{\bftheta}^{(b)}_2 \mid \hat{\bftheta}^{(b)}_1, \bfy \right)}  .
+$$
+
+\item The process can be repeated sequentially!  We call the resulting algorithm a \textit{sequential importance sampler}.
+\end{itemize}
+}
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Sequential Importance Sampling}
+\begin{itemize}
+\item The SIS algorithm proceeds by repeating the following steps for $t=1,\ldots,T$:
+\begin{itemize}
+\item Given a representation $\hat{p}\left(\bftheta_{1:t} \mid \bfy_{1:t}\right) = \sum_{b=1}^{B}\omega^{(b)}_{t} \delta_{\hat{\bftheta}_{1:t}^{(b)}}$ 
+\begin{enumerate}
+\item For $b=1, \ldots, B$ sample $\hat{\bftheta}_{t+1}^{(b)} \sim g\left(\bftheta^{(b)}_{t+1} \mid \bftheta_{1:t} , \bfy \right)$ and let $\hat{\bftheta}_{1:(t+1)}^{(b)} = \left(\hat{\bftheta}_{1:t}^{(b)}, \hat{\bftheta}_{t+1}^{(b)} \right)$.
+
+\item Construct $\hat{p}\left(\bftheta_{1:(t+1)} \mid \bfy_{1:(t+1)}\right) = \sum_{b=1}^{B} \omega^{(b)}_{t+1} \delta_{\hat{\bftheta}_{1:(t+1)}^{(b)}}$ where 
+$$
+\omega_{t+1}^{(b)}  \propto \omega_{t}^{(b)} \frac{p\left(\bfy_{1:(t+1)} \mid \bfy_{1:t}, \hat{\bftheta}^{(b)}_{1:(t+1)} \right) p\left(\hat{\bftheta}^{(b)}_{t+1} \mid \hat{\bftheta}^{(b)}_{1:t} \right)}{g\left(\hat{\bftheta}^{(b)}_{t+1} \mid \hat{\bftheta}^{(b)}_{1:t} \bfy \right)}  .
+$$
+\end{enumerate}
+\end{itemize}
+
+\item Note that the end of this process we have a particle representation for $p(\bftheta_{1:T} \mid \bfy_{1:T})$ (the joint posterior).
+\end{itemize}
+}
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Sequential Importance Sampling}
+\begin{itemize}
+\item The main issue with importance sampling is degeneracy:  As the algorithm proceeds, a single particle tends to receive all the weight.
+
+\item This is true even if the instrumental distributions are chosen optimally (which is very rarely the case!)
+
+\item Hence, for large $T$, estimates derived from the algorithm can have enormous variances.
+
+\item In certain cases we can dramatically improve performance by focusing on $p(\bftheta_t \mid \bfy_{1:t})$ (the marginal for the parameters at time $t$) rather than $p(\bftheta_{1:t} \mid \bfy_{1:t})$.
+\end{itemize}
+}
+
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{State-space models}
+\begin{itemize}
+\item State space models, which are particularly amenable to computation using variations of importance sample, are defined recursively through an \textit{observational equation}
+\begin{align*}
+\bfy_{t} \mid \bftheta_{t} &\sim p(\bfy_{t} \mid \bftheta_{t})  ,    &   t=1,\ldots,T,
+\end{align*}
+and an \textit{evolution equation}
+\begin{align*}
+\bftheta_{t} \mid \bftheta_{t-1} &\sim p(\bftheta_{t} \mid \bftheta_{t-1})  ,    &   t=1,\ldots,T,
+\end{align*}
+(together with an \textit{initial distribution} $\bftheta_{0} \sim p(\bftheta_{0})$).
+
+\item We typically interpret the index $t$ as representing ``time'', but it could represent other things (e.g., position in the genome).
+\end{itemize}
+}
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{State-space models}
+\begin{itemize}
+\item State-space models include a number of well known models (hidden Markov models, dynamic linear models, ARMA models, etc.)
+
+\item ``Static'' models (in which $\bftheta_t = \bftheta_0$ for all $t$) for which observations are conditionally independent of the parameters are technically state-space models (to see why, just let $p(\bftheta_{t} \mid \bftheta_{t-1}) = \delta_{\bftheta_{t-1}} (\bftheta_{t})$).  However a lot of the computational techniques we discuss here do not work very well for these models.
+\end{itemize}
+}
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{State-space models}
+\begin{itemize}
+\item With state-space models there is typically two types of tasks that we are interested in carrying out.
+\begin{itemize}
+\item Computing the posterior distribution $p(\bftheta_{t} \mid \bfy_{1:t})$ for each $t=1, \ldots, T$.  Typically we want to do this by somehow ``updating'' $p(\bftheta_{t-1} \mid \bfy_{1:(t-1)})$ rather than recomputing from scratch.  We call this process \textit{filtering}.
+
+\item Computing the posterior distribution $p( \bftheta_1 , \ldots, \bftheta_T\mid \bfy_{1:T})$, preferably by reusing information available from the computation of the filtering distributions.  We call this process \textit{smoothing}.
+\end{itemize}
+
+\item Note that we usually do not care about $p(\bftheta_{1:t} \mid \bfy_{1:t})$.
+
+\item Also, if we can carry out the filtering step, we can also easily make predictions.
+ \end{itemize}
+}
+
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Sampling Importance Resampling}
+\begin{itemize}
+\item Given the Markovian definition of state-space models, it is very natural to employ proposal distributions of the form $g(\bftheta_t \mid \bftheta_{t-1}, \bfy_t)$ (i.e., one that depends only on the previous state and the current observation).
+
+\item Furthermore, although using the prior as your instrumental distribution is typically a poor idea, the simplest algorithms further assume that $g(\bftheta_t \mid \bftheta_{t-1}, \bfy_t) = p(\bftheta_t \mid \bftheta_{t-1})$.  This leads to simplifications in the form of the weights
+
+\item Finally, to increase the diversity of the particles, rather than just updating the weights consider adding a resampling step in which a subset of the particle at time $t$ are selected to create the particles at $t+1$.
+
+\item These modifications to SIS lead to the sampling importance resampling (SIR) algorithm.
+\end{itemize}
+}
+
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Sampling Importance Resampling}
+\begin{itemize}
+\item The SIR algorithm proceeds by repeating the following steps for $t=1,\ldots,T$:
+\begin{itemize}
+\item Given a particle representation $\hat{p}\left(\bftheta_{t} \mid \bfy_{1:t}\right) = \sum_{b=1}^{B} \omega^{(b)}_{t} \delta_{\hat{\bftheta}_{t}^{(b)}}$ 
+\begin{enumerate}
+\item For $b=1, \ldots, B$ sample $\tilde{\bftheta}_{t}^{(b)} \sim \hat{p}\left(\bftheta_{t} \mid \bfy_{1:t}\right)$.
+
+\item For $b=1, \ldots, B$ sample $\hat{\bftheta}_{t+1}^{(b)} \mid \tilde{\bftheta}_{t}^{(b)} \sim p\left(\bftheta_{t+1} \mid \tilde{\bftheta}^{(b)}_{t}\right)$.
+
+\item Construct $\hat{p}\left(\bftheta_{t+1} \mid \bfy_{1:(t+1)}\right) = \sum_{b=1}^{B} \omega^{(b)}_{t+1} \delta_{\hat{\bftheta}_{t+1}^{(b)}}$ where 
+$$
+\omega^{(b)}_{t+1} = \frac{p\left(\bfy_{t+1} \mid \hat{\bftheta}^{(b)}_{t+1}\right)}{\sum_{\ell =1}^{B} p\left(\bfy_{t+1} \mid \hat{\bftheta}^{(\ell)}_{t+1} \right)}  .
+$$
+\end{enumerate}
+\end{itemize}
+\item It is very important to note that because of the resampling step in (1) the dependence between $\bftheta_{t}^{(b)}$ and $\bftheta_{t+1}^{(b)}$ is broken and the SIR algorithm only gives you a representation for $p\left(\bftheta_{t+1} \mid \bfy_{1:(t+1)}\right)$ rather than for $p\left(\bftheta_{1:(t+1)} \mid \bfy_{1:(t+1)}\right)$
+
+\end{itemize}
+}
+
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Sampling Importance Resampling}
+\begin{itemize}
+\item {\bf Example (a simple linear Gaussian system):}  Consider the linear Gaussian state-space model with
+\begin{align*}
+y_{t} \mid \theta_{t} &\sim \normal( \theta_{t} , \sigma^2)  ,  &
+\theta_{t} \mid \theta_{t-1} &\sim \normal(\theta_{t-1}, \tau^2)  ,  &
+\theta_0 &\sim \normal(m_0, C_0^2)  .
+\end{align*}
+
+If we assume that $\sigma^2$ and $\tau^2$ are known, then the filtering distributions can be obtained in closed form.  In particular, $\bftheta_t \mid \bfy_{1:t} \sim \normal \left( m_t, C_t^2 \right)$ where
+\begin{align*}
+m_t &= \frac{\frac{y_t}{\sigma^2} + \frac{m_{t-1}}{\tau^2 + C_{t-1}^2}}{\frac{1}{\sigma^2} + \frac{1}{\tau^2 + C_{t-1}^2}}     ,    &    
+%
+C_t^2 &= \frac{1}{\frac{1}{\sigma^2} + \frac{1}{\tau^2 + C_{t-1}^2}}  .
+\end{align*}
+
+These recursions are known as the Kalman filter in engineering.
+\end{itemize}
+}
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Sampling Importance Resampling}
+\begin{itemize}
+\item {\bf Example (a simple linear Gaussian system, cont):}  The SIR algorithm for this problem takes the form
+\vspace{1.5mm}
+
+\begin{enumerate}
+\item For $b=1, \ldots, B$ sample $\tilde{\theta}_{t}^{(b)} \sim \hat{p}\left(\theta_{t} \mid \bfy_{1:t}\right)$.
+
+\item For $b=1, \ldots, B$ sample $\hat{\theta}_{t+1}^{(b)} \mid \tilde{\theta}_{t}^{(b)} \sim \normal \left(\theta_{t+1} \mid \tilde{\theta}^{(b)}_{t}, \tau^2 \right)$.
+
+\item Construct $\hat{p}\left(\theta_{t+1} \mid \bfy_{1:(t+1)}\right) = \sum_{b=1}^{B} \omega^{(b)}_{t+1} \delta_{\hat{\theta}_{t+1}^{(b)}}$ where 
+$$
+\omega^{(b)}_{t+1} = \frac{\normal\left(y_{t+1} \mid \hat{\theta}^{(b)}_{t+1}, \sigma^2\right)}{\sum_{\ell =1}^{B} \normal\left(y_{t+1} \mid \hat{\theta}^{(\ell)}_{t+1} , \sigma^2 \right)} .
+$$
+\end{enumerate}
+
+\vspace{1mm}  The file \texttt{GaussianSIR.R} implements this SIR algorithm and compares it against the closed-form solution.
+\end{itemize}
+}
+
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Sampling Importance Resampling}
+\begin{itemize}
+\item {\bf Example (a simple linear Gaussian system, cont):}  Comparing estimates based on the closed-form recursions and the SIR filter
+\end{itemize}
+\includegraphics[height=5.6cm,angle=0]{plots/Gaussian_means.pdf}
+\includegraphics[height=5.6cm,angle=0]{plots/Gaussian_confint.pdf}
+}
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Sampling Importance Resampling}
+\begin{itemize}
+\item {\bf Example (a simple linear Gaussian system, cont):}  Values of the ESS
+\end{itemize}
+\includegraphics[height=5.6cm,angle=0]{plots/Gaussian_ESSintime.pdf}
+\includegraphics[height=5.6cm,angle=0]{plots/Gaussian_ESSvslogVar.pdf}
+}
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Sampling Importance Resampling}
+\begin{itemize}
+\item {\bf Suggested exercise:}  Derive the equations for the Kalman filter for the linear Gaussian state-space model we just discussed.
+\end{itemize}
+}
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Auxiliary particle filters}
+\begin{itemize}
+\item As you can see from the example, the ESS in the previous simulations can be quite low.
+
+\item The main issue with SIR is that it uses the prior as the instrumental distribution.
+
+\item Creating a proposal that uses the information in $y_t$ should lead to lower variances in the estimators.  That is the motivation for the auxiliary particle filter (APF)!
+\end{itemize}
+}
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Auxiliary particle filters}
+\begin{itemize}
+\item The ``ideal'' reweighing function is 
+$$
+p(\bfy_{t+1} \mid \bftheta^{(b)}_t) = \int p(\bfy_{t+1} \mid \bftheta_{t+1}) p(\bftheta_{t+1} \mid \bftheta_{t}) \dd \bftheta_{t+1}
+$$
+so that particles that have a high likelihood of evolving into good parameters for $\bfy_{t+1}$ receive a higher weight.  If this reweighing function is used we say that the APF is \textit{perfectly adapted}.
+
+\item However, $p(\bfy_{t+1} \mid \bftheta^{(b)}_t)$ is typically unavailable, and therefore we use the rough approximation 
+\begin{multline*}
+\int p(\bfy_{t+1} \mid \bftheta_{t+1}) p(\bftheta_{t+1} \mid \bftheta_{t}) \dd \bftheta_{t+1} \approx \\
+%
+p\left(\bfy_{t+1} \mid \bftheta_{t+1} = \E\left\{ \bftheta_{t+1} \mid \bftheta_{t}\right\} \right)  .
+\end{multline*}
+\end{itemize}
+}
+
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Auxiliary particle filters}
+\begin{itemize}
+\item The APF algorithm proceeds by repeating the following steps for $t=1,\ldots,T$:
+\begin{itemize}
+\item Given a particle representation $\hat{p}\left(\bftheta_{t} \mid \bfy_{1:t}\right) = \sum_{b=1}^{B} \omega^{(b)}_{t} \delta_{\hat{\bftheta}_{t}^{(b)}}$ 
+\begin{enumerate}
+
+\item For $b=1, \ldots, B$ construct a first-stage weight 
+$$
+\varpi^{(b)}_{t} = \frac{\omega^{(b)}_{t} p\left(\bfy_{t+1} \mid \bfmu^{(b)}_{t}\right)}{\sum_{\ell =1}^{B} \omega^{(\ell)}_{t} p\left(\bfy_{t+1} \mid \bfmu^{(\ell)}_{t} \right)}  .
+$$
+where $\bfmu_{t}^{(b)} = \E\left(\bftheta_{t+1} \mid \hat{\bftheta}_{t}^{(b)} \right)$.
+
+\item For $b=1, \ldots, B$ sample $\xi_{t}^{(b)} \sim \sum_{\ell=1}^{B}\varpi^{(\ell)}_{t} \delta_{\ell}$.
+
+\item For $b=1, \ldots, B$ sample $\hat{\bftheta}_{t+1}^{(b)} \mid \hat{\bftheta}_{t}^{(\xi_{t}^{(b)})} \sim p\left(\bftheta_{t+1} \mid \hat{\bftheta}^{(\xi_{t}^{(b)})}_{t}\right)$.
+
+\item Construct $\hat{p}\left(\bftheta_{t+1} \mid \bfy_{1:(t+1)}\right) = \sum_{b=1}^{B} \omega^{(b)}_{t+1} \delta_{\hat{\bftheta}_{t+1}^{(b)}}$ where 
+$$
+\omega^{(b)}_{t+1} \propto  \frac{p\left(\bfy_{t+1} \mid \hat{\bftheta}^{(\xi_{t}^{(b)})}_{t+1}\right)}{p\left(\bfy_{t+1} \mid \bfmu^{(\xi_{t}^{(b)})}_{t}\right)}   .
+$$
+\end{enumerate}
+\end{itemize}
+\end{itemize}
+}
+
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Auxiliary particle filters}
+\begin{itemize}
+\item {\bf Example (a simple linear Gaussian system, cont):}  We consider now the implementation of the APF for the linear Gaussian system we described in our previous example (see file \texttt{GaussianAPF.R}).
+\end{itemize}
+\includegraphics[height=5.6cm,angle=0]{plots/Gaussian_means_APF.pdf}
+\includegraphics[height=5.6cm,angle=0]{plots/Gaussian_ESSintime_APF.pdf}
+}
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Auxiliary particle filters}
+\begin{itemize}
+\item {\bf Example (a simple linear Gaussian system, cont):}  In this case the differences between both algorithms are minimal (the average ESS under the SIR is 4035, while the ESS under the APF is 4079).
+\end{itemize}
+}
+
+
+
+\frame{
+\sffamily
+\frametitle{Auxiliary particle filters}
+\begin{itemize}
+\item {\bf Example (stochastic volatility):}  Consider data from a model
+\begin{align*}
+y_t \mid \theta_t &\sim \normal \left(0, \exp\left\{ 2\theta_t \right\}\right) \\ 
+\theta_t \mid \theta_{t-1} &\sim \normal\left( \eta + \rho \left\{ \theta_{t-1} - \eta \right\} , \tau^2\right) \\
+\theta_0 &\sim \normal\left( \eta, \frac{\tau^2}{1 - \rho^2}\right)
+\end{align*}
+The file \texttt{SVAPF.R} contains the SIR and the APF implementations for this model.   
+\end{itemize}
+}
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Smoothing}
+\begin{itemize}
+\item Particle smoothing refers to the process of generating samples from $p(\bftheta_{1:T} \mid \bfy_{1:T})$ using the particles associated with the approximations $\hat{p}(\bftheta_t \mid \bfy_{1:T}) = \sum_{b=1}^{B} \omega_t^{(b)} \delta_{\hat{\bftheta}^{(b)}_{t}}$.
+
+\item The simplest smoothing algorithm was proposed by \cite{godsill2004monte}.  It generates a sample trajectory $\left( \bar{\theta}^{(1)}, \ldots, \bar{\theta}^{(B)} \right)$ through the following steps:
+
+\vspace{1mm}
+
+\begin{enumerate}
+\item Sample $\bar{\theta}_{(T)} \sim \hat{p}(\bftheta_T \mid \bfy_{1:T})$.
+
+\vspace{1mm}
+
+
+\item For $t=T-1, T-2, \ldots, 1$, repeat: 
+
+\begin{enumerate}
+\item Calculate $\varpi_{t \mid t+1}^{(b)} \propto \omega_t^{(b)} p\left( \bar{\bftheta}_{t+1} \mid \hat{\bftheta}^{(b)}_{t} \right)$ for each $b=1,\ldots, B$.
+
+\vspace{0.5mm}
+
+\item Sample $\bar{\bftheta}_t \sim \sum_{b=1}^{B} \varpi_{t \mid t+1}^{(b)} \delta_{\hat{\bftheta}^{(b)}_{t}}$.
+\end{enumerate}
+
+\end{enumerate}
+\end{itemize}
+}
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Some important topics not treated here}
+\begin{itemize}
+\item As you can see from the examples, a number of models include unknown \textit{static parameters} $\bfeta$ that do not evolve over time in addition to the states $\bftheta_{1:T}$ (which we consider \textit{dynamic parameters}), so that the posterior is:
+$$
+p(\bftheta_{1:T}, \bfeta \mid \bfy_{1:T})  .
+$$
+
+\item Note that the SIR/APF algorithm gives us a way to approximate $p(\bfeta \mid \bfy_{1:T}) = \int p(\bftheta_{1:T}, \bfeta \mid \bfy_{1:T}) \dd \bftheta_{1:T}$.  Hence, we could combine SIR/APF algorithms for $\bftheta_{1:T}$ with regular MCMC steps for $\bfeta$ to create a hybrid scheme (e.g., see \citealp{andrieu2010particle}).
+
+\item We could also try to ``filter'' the static parameters along with the states.  For example, see \cite{storvik2002particle} and \cite{liu2001combined}.
+\end{itemize}
+}
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Some important topics not treated here}
+\begin{itemize}
+\item We just scratched the surface of SMC algorithms.
+
+\item SMC algorithms are very popular in the engineering literature.
+
+\item For comprehensive review see \cite{cappe2007overview} (my favorite) and \cite{doucet2009tutorial}.
+\end{itemize}
+}
+
+
+

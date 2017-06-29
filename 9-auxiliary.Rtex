@@ -1,0 +1,202 @@
+
+
+\frame{
+\sffamily
+\frametitle{Auxiliary variables}
+\begin{itemize}
+\item In spite of all the caveats mentioned so far, Gibbs steps are very often preferable because they are simpler to understand and implement.
+
+\item Particularly in high-dimensional problems, making joint proposals is difficult and univariate random-walk MH steps end up being very inefficient.
+
+\item In many cases computation can be simplified by adding auxiliary variables (we are not interested in them, but they are added for convenience!)
+
+\item This is sometimes called demarginalization:  We look for a model such that, when we marginalize over the auxiliary variables, we recover the original one.
+
+\item This goes against our design criteria, but can dramatically simplify implementation with a moderate cost in terms of mixing.  In some cases, it can even improve mixing! (e.g., by allow high-dimensional conjugate updates)
+\end{itemize}
+}
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Auxiliary variables}
+\begin{itemize}
+\item {\bf Example (Gaussian mixture models):  }  Assume that data is generated from a two-component mixture
+$$
+y_i \mid \omega, \theta_1, \sigma_1^2, \theta_2, \sigma_2^2 \sim \omega \normal(y_i \mid \theta_1, \sigma_1^2) + (1-\omega) \normal(y_i \mid \theta_2, \sigma_2^2)
+$$
+for $i=1,\ldots, n$ with priors
+\begin{align*}
+\omega &\sim \bet(1,1) ,   &   \theta_i &\sim \normal(\mu,\tau^2) ,   &   \sigma^2_i &\sim \IGam(a, c).
+\end{align*}
+
+Sampling directly from this model is complicated.  You could try a five-dimensional Gaussian random walk on $(\mbox{logit} \, \omega, \theta_1, \log \sigma_1^2, \theta_2, \log \sigma_2^2)$, but it would be hard to tune.  More importantly, such scheme would not scale very well to mixtures with more components.
+
+\end{itemize}
+}
+
+
+
+\frame{
+\sffamily
+\frametitle{Auxiliary variables}
+\begin{itemize}
+\item {\bf Example (Gaussian mixture models, cont):  }  Augment the model with indicator variables $\xi_1, \ldots, \xi_n$ such that $\xi_i \in \{ 1, 2 \}$ and
+$$
+y_i \mid \xi_i, \theta_1, \sigma_1^2, \theta_2, \sigma_2^2 \sim \normal(y_i \mid \theta_{\xi_i}, \sigma_{\xi_i}^2) ,
+$$
+where the $\xi_i$s are iid with 
+$$
+\Pr(\xi_i = 1 \mid \omega) = \omega = 1 - \Pr(\xi_i = 2 \mid \omega) .
+$$
+It is clear that if we integrate $\xi_i$ out of the model we recover our original formulation.
+\end{itemize}
+}
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Auxiliary variables}
+\begin{itemize}
+\item {\bf Example (Gaussian mixture models, cont):  }  In the augmented model, the posterior distribution is proportional to
+\begin{multline*}
+\left\{ \prod_{i=1}^{n} \normal \left(y_i \mid \theta_{\xi_i}, \sigma_{\xi_i}^2 \right) \right\} 
+\left\{ \prod_{i=1}^{n} \omega^{\sum_{i=1}^{n} \ind_{\{ \xi_i = 1 \}}} \left( 1 - \omega\right)^{\sum_{i=1}^{n} \ind_{\{ \xi_i = 2 \}}}  \right\} \\
+%
+ \bet(\omega \mid 1, 1) \left\{ \prod_{i=1}^{2} \normal(\theta_i \mid \mu, \tau^2) \right\}  \left\{ \prod_{i=1}^{2} \IGam(\sigma^2_i \mid a, c) \right\}
+\end{multline*}
+
+
+\end{itemize}
+}
+
+
+
+\frame{
+\sffamily
+\frametitle{Auxiliary variables}
+\begin{itemize}
+\item {\bf Example (Gaussian mixture models, cont):  }  The full conditionals reduce to:
+\begin{enumerate}
+\item $\Pr\left( \xi_i = 1 \mid \cdots \right) = \frac{\omega \frac{1}{\sigma_1}\exp\left\{ -\frac{(y_i - \theta_1)^2}{2\sigma^2_1}  \right\}}{\omega\frac{1}{\sigma_1}\exp\left\{ -\frac{(y_i - \theta_1)^2}{2\sigma^2_1}  \right\} + (1-\omega)\frac{1}{\sigma_2}\exp\left\{ -\frac{(y_i - \theta_2)^2}{2\sigma^2_2}  \right\}}$, while $\Pr\left( \xi_i = 2 \mid \cdots \right) = 1 - \Pr\left( \xi_i = 1 \mid \cdots \right)$.
+
+\vspace{1.5mm}
+
+\item $\omega \mid \cdots \sim \bet\left( 1 + n_1,  1 + n_2 \right)$ where $m_k = \sum_{i=1}^{n} \ind_{\{ \xi_i = k \}}$.
+
+\vspace{1.5mm}
+
+\item $\theta_k \mid \cdots \sim \normal\left( \frac{\frac{s_k}{\sigma_k^2} + \frac{\mu}{\tau^2}}{\frac{m_k}{\sigma_k^2} + \frac{1}{\tau^2}}, \frac{1}{\frac{m_k}{\sigma_k^2} + \frac{1}{\tau^2}} \right)$ where $m_k = \sum_{i=1}^{n} \ind_{\{ \xi_i = k \}}$ as before and $s_k = \sum_{\{ i : \xi_i = k \}} y_{i}$.
+
+\vspace{1.5mm}
+
+\item $\sigma^2_k \mid \cdots \sim \IGam\left( a + \frac{m_k}{2} , c + \frac{1}{2} \sum_{\{ i : \xi_i =k \}} \{ y_i - \theta_k \}^2 \right)$.
+
+\vspace{1.5mm}
+
+Note that the $\xi_i$s have a nice interpretation, particularly if you are using the mixture model for clustering!
+\end{enumerate}
+\end{itemize}
+}
+
+\begin{frame}[fragile]
+\sffamily
+\frametitle{Auxiliary variables}
+
+\begin{itemize}
+\item {\bf Example (Gaussian mixture models, cont):} Here is the NIMBLE code for such an augmented mixture model.
+
+%% begin.rcode mixture-auxiliary-code, eval=FALSE
+%% end.rcode
+\end{itemize}
+\end{frame}
+
+\frame{
+\sffamily
+\frametitle{Auxiliary variables}
+
+\begin{itemize}
+\item {\bf Example (Gaussian mixture models, cont):} The code in \texttt{mixture-faithful.R} shows both the original and augmented versions of the two-component mixture model for R's Old Faithful dataset. For the original version, we need a user-defined mixture density.
+
+Here's the posterior inference for the mixture weights and membership.
+
+\includegraphics[width=3in]{plots/mixture-faithful}
+
+\end{itemize}
+}
+
+\frame{
+\sffamily
+\frametitle{Auxiliary variables}
+\begin{itemize}
+\item {\bf Example (Probit regression, \citealp{AlCh93}):  }  For $i=1, \ldots, n$ let $y_i \mid \theta_i \sim \Ber \left( \theta_i \right)$ where $\Phi^{-1}\left( \theta_i \right) = \bfx_i^T \bfbeta$, $\bfx_i$ is a vector of known  regressors and $\bfbeta$ is a vector of regression coefficients with $\bfbeta \sim \normal(\mathbf{0}, \bfSigma)$.
+
+\vspace{1mm}
+
+In this case introduce auxiliary variables $z_1, \ldots, z_n$ such that
+\begin{align*}
+z_{i} \mid \bfbeta &\sim \normal(\bfx_i^T\bfbeta, 1)   &   
+%
+y_{i} &= \begin{cases} 
+1 & z_i \ge 0  \\
+0 & z_i < 0
+\end{cases}
+\end{align*}
+
+The full conditional for $\bfbeta$ is Gaussian, while the full conditional of $z_i$ is a truncated normal.  A slight improvement can be obtained if instead of working with $z_i \mid \bfbeta$ you work with $z_i | z_{-i}$ (this is an example of Rao-Blackwellization, see \citealp{holmes2006bayesian}).
+\end{itemize}
+}
+
+
+
+\frame{
+\sffamily
+\frametitle{Auxiliary variables}
+
+\fix we could show example of augmented Probit using Gelman and Hill child support example (though nimble would use MH for the trunc normal as we don't recognize conjugacy there)
+
+{\bf Suggested exercise:  } Complete the details of the augmented Gibbs sampler for the probit regression model.  
+}
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Auxiliary variables}
+\begin{itemize}
+\item {\bf Example (Robust regression):}   Consider the robust regression model
+\begin{align*}
+y_i &= \bfx_i^T \bfbeta + \sigma \epsilon_i ,   & \epsilon &\sim t_{\nu}  ,     &    i=1, \ldots, n.
+\end{align*}
+where $\bfbeta \sim \normal(\mathbf{0}, \bfSigma^2)$, $\sigma^2 \sim \IGam(a, c)$ and $\nu \sim p(\nu)$.  
+
+\vspace{1mm}
+
+It is well known that the Student $t$ distribution can be written as a scale mixture of normals.  Accordingly, introduce auxiliary variables $\lambda_1, \ldots, \lambda_n$ such that
+\begin{align*}
+y_i \mid \bfbeta, \sigma^2, \lambda_i &\sim \normal \left( \bfx_i^T \bfbeta, \frac{\sigma^2}{\lambda_i} \right) ,    &   \lambda_i &\sim \Gam\left( \frac{\nu}{2}, \frac{\nu}{2} \right) .
+\end{align*}
+
+Including $\lambda_1, \ldots, \lambda_n$ in the model makes the full conditional for $\bfbeta$ a Gaussian and the full conditional for $\sigma^2$ and inverse Gamma.  On the other hand, the full conditional for $\lambda_i$ is another Gamma, while $\nu$ needs to be sampled using a MH step (preferably from the unaugmented model!).
+\end{itemize}
+}
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Auxiliary variables}
+{\bf Suggested exercise:  } Complete the details of the augmented sampler for the robust regression model.  
+}
+
+
+

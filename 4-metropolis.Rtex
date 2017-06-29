@@ -1,0 +1,532 @@
+\frame{
+\sffamily
+\frametitle{The Metropolis-Hastings algorithm}
+\begin{itemize}
+\item We move on now to discuss specific MCMC algorithms used in Bayesian computation.  We start with the Metropolis-Hastings (MH) algorithm, which encompasses many others as special cases.
+
+\item The idea behind the MH algorithm is similar to that behind the rejection algorithm:  
+
+\begin{itemize}
+\item Pick a proposal distribution $q(\vartheta \mid \theta)$ (think of it as \textit{almost} the transition kernel of your Markov chain) that will be used to generate potentially new states.   
+
+\item The chain either stays on the old value or moves to this new proposed values according to a certain probability, that is chosen to ensure that the chain is reversible!
+\end{itemize}
+\end{itemize}
+}
+
+
+
+\frame{
+\sffamily
+\frametitle{The Metropolis-Hastings algorithm}
+Given $\theta^{(t)}$
+\begin{enumerate}
+\item Generate $\vartheta^{(t+1)} \sim q\left( \vartheta \mid \theta^{(t)}\right)$.
+\item Take 
+$$
+\theta^{(t+1)} = \begin{cases}
+\vartheta^{(t+1)} & \mbox{with probability }\,  \rho\left(\vartheta^{(t+1)}, \theta^{(t)}\right) \\
+\theta^{(t)}  & \mbox{with probability }\,  1 - \rho\left(\vartheta^{(t+1)}, \theta^{(t)}\right)
+\end{cases}  ,
+$$
+where
+$$
+ \rho\left(\vartheta^{(t+1)}, \theta^{(t)}\right) = \min\left\{ 
+ 1,
+ %
+ \frac{p\left(\vartheta^{(t+1)} \mid \bfy\right) }{p\left(\theta^{(t)} \mid \bfy\right)}
+ \frac{q\left(\theta^{(t)} \mid \vartheta^{(t+1)}\right)}{q\left(\vartheta^{(t+1)} \mid \theta^{(t)}\right)}
+ \right\} .
+$$
+
+\end{enumerate}
+}
+
+
+
+
+\frame{
+\sffamily
+\frametitle{The Metropolis-Hastings algorithm}
+\begin{itemize}
+\item $\rho\left(\vartheta^{(t+1)}, \theta^{(t)}\right) $ is called the Metropolis-Hastings acceptance probability.
+
+\item Note that the algorithm depends on the ratio $\frac{p\left(\vartheta^{(t+1)} \mid \bfy\right) }{p\left(\theta^{(t)} \mid \bfy\right)}$, so it works even if $p\left(\theta \mid \bfy\right)$ is known only up to a normalizing constant.
+
+\item There are a number of variants of the algorithm!
+\end{itemize}
+}
+
+
+
+
+\frame{
+\sffamily
+\frametitle{The Metropolis-Hastings algorithm}
+
+In the random-walk Metropolis-Hastings, given $\theta^{(t)}$:
+\begin{enumerate}
+\item Generate $\vartheta^{(t+1)} \sim  g\left( \left| \vartheta - \theta^{(t)} \right| \right)$, where $g$ is a density.
+\item Take 
+$$
+\theta^{(t+1)} = \begin{cases}
+\vartheta^{(t+1)} & \mbox{with probability }\,  \rho\left(\vartheta^{(t+1)}, \theta^{(t)}\right) \\
+\theta^{(t)}  & \mbox{with probability }\,  1 - \rho\left(\vartheta^{(t+1)}, \theta^{(t)}\right)
+\end{cases}  ,
+$$
+where
+$$
+ \rho\left(\vartheta^{(t+1)}, \theta^{(t)}\right) = \min\left\{ 
+ 1,
+ %
+ \frac{p\left(\vartheta^{(t+1)} \mid \bfy\right) }{p\left(\theta^{(t)} \mid \bfy\right)}
+ \right\} .
+$$
+\vspace{1mm}
+Common choices for $g$ include zero-mean Gaussian (my favorite) or uniform distributions!
+
+\end{enumerate}
+}
+
+
+
+\frame{
+\sffamily
+\frametitle{The Metropolis-Hastings algorithm}
+\begin{itemize}
+\item {\bf Example (Gumbel likelihood):}  Consider a setting where $y_1, \ldots, y_n$ corresponds to a random sample from a Gumbel distribution with location parameter $\theta$, i.e., 
+\begin{align*}
+p(y_i \mid \theta) &= \exp\left\{  -(y_i - \theta) - \exp\{ -(y_i - \theta) \} \right\}  &  y_i \in \reals
+\end{align*}
+and assume that we let $\theta \sim \normal (\xi, \kappa^2)$ a priori.
+
+\vspace{1mm}
+
+The posterior distribution associated with this model is intractable.  However, creating a RWMH algorithm to sample from it is straightforward.  Because $\theta$ can in principle take any real value, a Gaussian random walk seems appropriate,
+$$
+q(\vartheta \mid \theta) = \frac{1}{\sqrt{2\pi} \tau} \exp\left\{ -\frac{1}{2\tau^2}(\vartheta - \theta)^2 \right\}
+$$
+\end{itemize}
+}
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{The Metropolis-Hastings algorithm}
+\begin{itemize}
+\item {\bf Example (Gumbel likelihood, cont):}  The corresponding acceptance probability becomes
+{\scriptsize
+\begin{multline*}
+\rho(\vartheta, \theta) = \\
+\min\left\{ 1, \frac{ \exp\left\{  -\sum\limits_{i=1}^{n} (y_i - \vartheta) -\sum\limits_{i=1}^{n}\exp\{ -(y_i-\vartheta) \} \right\}  }
+{ \exp\left\{  -\sum\limits_{i=1}^{n} (y_i - \theta) -\sum\limits_{i=1}^{n}\exp\{ -(y_i-\theta) \} \right\}  }
+%
+\frac{ \exp\left\{ - \frac{(\vartheta - \xi)^2}{2\kappa^2} \right\} }
+{ \exp\left\{ - \frac{(\theta - \xi)^2}{2\kappa^2} \right\} }
+\right\}
+\end{multline*}
+}
+(Note that, as we discussed before, the ratio of the proposals cancels out because of the symmetry!)
+
+\vspace{1mm}
+
+This algorithm is implemented in the file \texttt{mh-gumbel.R}, as we develop in the next few slides.  We'll compare the results using $\tau^2 = 0.001$ (too small!), $\tau^2 = 0.07$ (about right, roughly $40\%$ acceptance rate), and $\tau^2 = 5$ (too large!)
+
+\end{itemize}
+}
+
+\begin{frame}[fragile] 
+\sffamily
+\frametitle{The Metropolis-Hastings algorithm}
+
+Here's what a direct implementation in R would look like (see the code file for the definition of \texttt{dgumbel}).
+
+%% begin.rcode gumbel-noNimble, eval=FALSE
+%% end.rcode
+
+\end{frame}
+
+\begin{frame}[fragile] 
+\sffamily
+\frametitle{The Metropolis-Hastings algorithm}
+
+NIMBLE implements the algorithm in a model-generic fashion using a \texttt{nimbleFunction}. The \texttt{setup} code adapts the algorithm to the model and parameter of interest. The \texttt{run} code implements the algorithm generically.
+
+%% begin.rcode metropolis-nimble, eval=FALSE, size = 'tiny'
+%% end.rcode
+
+\end{frame}
+
+\begin{frame}[fragile] 
+\sffamily
+\frametitle{The Metropolis-Hastings algorithm}
+
+Here's the BUGS-based model specification for this dataset in NIMBLE. 
+
+%% begin.rcode gumbel-setup, echo=FALSE
+%% end.rcode
+
+%% begin.rcode gumbel-nimble-dist, include=FALSE
+%% end.rcode
+
+%% begin.rcode gumbel-bugs, size='tiny'
+%% end.rcode
+\end{frame}
+
+\begin{frame}[fragile] 
+\sffamily
+\frametitle{The Metropolis-Hastings algorithm}
+
+Here's how we set up and run the MCMC, with $\tau^2 = 5$.
+
+%% begin.rcode gumbel-mcmc, size='tiny'
+%% end.rcode
+
+\end{frame}
+
+\begin{frame}[fragile] 
+\sffamily
+\frametitle{The Metropolis-Hastings algorithm}
+
+Here are the results/MCMC diagnostics for smaller versions of $\tau^2$.
+
+%% begin.rcode gumbel-results, include=FALSE
+%% end.rcode
+
+%% begin.rcode gumbel-other-prop-variances, include=FALSE
+%% end.rcode
+
+%% begin.rcode gumbel-plots, echo=FALSE, fig.width=5, fig.height=2.5
+%% end.rcode
+
+\end{frame}
+
+
+\frame{
+\sffamily
+\frametitle{The Metropolis-Hastings algorithm}
+\begin{itemize}
+
+\item {\bf Example (Nonlinear binomial regression):} We'll consider next a binomial regression for data on the number of adult flour beetles killed after five
+hours of exposure to various levels of gaseous carbon disulphide (CS$_{2}$) (from Bliss (1935, Annals of Applied Biology).
+$$
+P(\mbox{death}\mid w_{i})\equiv h(w_{i})=\left[\frac{\exp(x_{i})}{1+\exp(x_{i})}\right]^{m_{1}}
+$$
+ where $m_{1}>0$, $w_{i}$ is the known covariate (dose), and $x_{i}=\frac{w_{i}-\mu}{\sigma}$,
+where $\mu\in R^{1}$ and $\sigma^{2}>0$.
+This problem is more complicated than the previous one in two ways:  Now the unknown paramater vector $\bftheta = (\mu, \sigma, m_{1})$ is three-dimensional, and the last two parameters are restricted to be positive!
+\end{itemize}
+}
+
+
+\frame{
+\sffamily
+\frametitle{The Metropolis-Hastings algorithm}
+\begin{itemize}
+
+\item {\bf Example (binomial regression, cont):}  For the positive parameters, we need to use non-negative priors:
+\begin{align*}
+\mu & \sim N(c_{0},d_{0}) \\
+\sigma^{2} & \sim IG(e_{0},f_{0}) \\
+m_{1} & \sim Ga(a_{0},b_{0})
+\end{align*}
+
+A Gaussian random walk directly on $\theta$ is not a great idea (you would be automatically rejecting every time you generate negative values for either $\sigma$ or $m_1$).
+
+\vspace{1mm}
+
+\alert{However, a (trivariate!) Gaussian random walk for $(\mu, \log \sigma, \log m_1)$ is feasible and does not lead to automatic rejections. }
+
+\vspace{1mm}
+
+(Another alternative is to use a reflecting Gaussian random walk (this is an option in NIMBLE), but I will not pursue that idea further.)
+\end{itemize}
+}
+
+
+\frame{
+\sffamily
+\frametitle{The Metropolis-Hastings algorithm}
+\begin{itemize}
+
+\item {\bf Example (binomial regression, cont):}  Since we work with a transformation of the parameters, there are two ways to derive the algorithm (they lead to different formal expressions, but they are equivalent!):
+\begin{enumerate}
+\item Do a transformation so that the problem is reformulated as sampling from $p( z_1, z_2, z_3 \mid \bfy)$ where $z_1 = \mu$, $ z_2 = \log \sigma$ and $z_3 = \log m_1$ instead of $p(\mu, \sigma, m_1 \mid \bfy)$.  Once samples $z_1^{(1)}, \ldots, z_1^{(B)}$ and $z_2^{(1)}, \ldots, z_2^{(B)}$ and $z_3^{(1)}, \ldots, z_3^{(B)}$ have been generated, samples $\sigma^{(1)}, \ldots, \sigma^{(B)}$ and $m_1^{(1)}, \ldots, m_1^{(B)}$ can be constructed by letting $\sigma^{(b)} = \exp\{ z_2^{(b)} \}$ and $m_1^{(b)} = \exp\{ z_3^{(b)} \}$
+ 
+\item Keep the original target $p(\mu, \sigma, m_1 \mid \bfy)$ but think of your proposal as being a trivariate combination of a Gaussian and log-Gaussian distribution rather than a Gaussian (and recognize that your proposal is almost symmetric, but not quite!).
+\end{enumerate}
+
+Note that, in both cases, a Jacobian is going to be involved.
+\end{itemize}
+}
+
+
+
+\frame{
+\sffamily
+\frametitle{The Metropolis-Hastings algorithm}
+\begin{itemize}
+
+\item {\bf Example (binomial regression, cont):}  Taking the second route, the proposal distribution is
+{\small \begin{multline*}
+p( \vartheta_1, \vartheta_2, \vartheta_3 \mid \mu, \sigma, m_1) = \frac{1}{(2\pi)^{3/2}} \frac{1}{\vartheta_2 \vartheta_3} \left| \bfOmega \right|^{-1/2}  \\
+%
+\exp\left\{ -\frac{1}{2} 
+\left( \begin{matrix} 
+\vartheta_1 - \mu \\
+\log \vartheta_2 - \log \sigma \\
+\log \vartheta_3 - \log m_1 
+\end{matrix}\right)^T
+\bfOmega^{-1}
+\left( \begin{matrix} 
+\vartheta_1 - \mu \\
+\log \vartheta_2 - \log \sigma \\
+\log \vartheta_3 - \log m_1 
+\end{matrix}\right)
+\right\}
+\end{multline*}
+}
+
+Note that $\bfOmega$ does not have to be diagonal, so the moves could (and, turns out, should!) be correlated.
+\end{itemize}
+}
+
+
+
+\frame{
+\sffamily
+\frametitle{The Metropolis-Hastings algorithm}
+\begin{itemize}
+
+\item {\bf Example (binomial regression, cont):}  The corresponding acceptance probability for the algorithm becomes
+{\scriptsize
+\begin{equation}
+\rho(\vartheta_1, \vartheta_2, \vartheta_3, \mu, \sigma, m_1) = 
+\min \left\{ 1,
+\frac{ p(\bfy|\vartheta_1, e^{\vartheta_2}, e^{\vartheta_3})p(\vartheta_1,e{^\vartheta_2}, e^{\vartheta_3})}
+{p(\bfy|\mu, \sigma, m_1)p(\mu, \sigma, m_1)}
+%
+\frac{\vartheta_2 \vartheta_3}{\log \sigma \log m_1} \right\}
+\end{equation}
+}
+(Note that the symmetric part of the proposal cancels out but the Jacobians are not symmetric, and they remain ...)
+\end{itemize}
+}
+
+\frame{
+\sffamily
+\frametitle{The Metropolis-Hastings algorithm}
+
+\begin{itemize}
+
+\item {\bf Example (binomial regression, cont):} In the file \texttt{mh-bliss.R} we implement the first of these two approaches (because that allows us to use NIMBLE's provided MCMC algorithms).
+\begin{enumerate}
+\item To tune the proposal variance, we  run the algorithm once with individual scalar Metropolis-Hastings samplers on the three parameters.
+\item We then rerun with the proposal covariance matrix for the trivariate Gaussian proposal equal to   $ = \frac{2.38^2}{d} \Var\left\{ (\mu, \log\sigma, \log m_1)^T \mid \bfy \right\}$.  (In this case $d=3$.)
+\end{enumerate}
+
+We'll revisit this when we talk about adaptive Metropolis-Hastings in which we learn the right proposal covariance.
+
+\end{itemize}
+ 
+}
+
+\frame{
+\sffamily
+\frametitle{The Metropolis-Hastings algorithm}
+{\bf Suggested exercise:}  Show that both approaches to constructing the random-walk Metropolis for the Gaussian process example lead to the same algorithm!
+}
+
+
+
+
+\frame{
+\sffamily
+\frametitle{The Metropolis-Hastings algorithm}
+\begin{itemize}
+\item The magic numbers $\frac{2.38^2}{d} \Var(\bftheta | \bfy)$ for proposals and $44 \%$ acceptance rates for unidimensional problems and $23 \%$ for multivariate problems comes from \cite{gelman1996efficient} \cite{roberts1997weak} and \cite{roberts2001optimal}, which derived general theoretical results and  performed experiments on a Gaussian.
+
+\item Since, with enough data, most posteriors are approximately Gaussian, these are reasonable rules of thumb!
+
+\item Note that, because we are making two independent runs, the fact that we change the variance of the chain is not (conceptually) an issue as it does not invalidate the Markov property.
+
+\item If a good approximation for $\Var(\bftheta | \bfy)$ is available (rarely the case) then the preliminary run can be skipped.
+\end{itemize}
+}
+
+\frame{
+\sffamily
+\frametitle{The Metropolis-Hastings algorithm}
+
+\fix consider Cox and CAR models here
+
+}
+
+\frame{
+\sffamily
+\frametitle{The Metropolis-Hastings algorithm}
+
+In the independent Metropolis-Hastings, given $\theta^{(t)}$:
+\begin{enumerate}
+\item Generate $\vartheta^{(t+1)} \sim g\left( \vartheta \right)$.
+\item Take 
+$$
+\theta^{(t+1)} = \begin{cases}
+\vartheta^{(t+1)} & \mbox{with probability }\,  \rho\left(\vartheta^{(t+1)}, \theta^{(t)}\right) \\
+\theta^{(t)}  & \mbox{with probability }\,  1 - \rho\left(\vartheta^{(t+1)}, \theta^{(t)}\right)
+\end{cases}  ,
+$$
+where
+$$
+ \rho\left(\vartheta^{(t+1)}, \theta^{(t)}\right) = \min\left\{ 
+ 1,
+ %
+ \frac{p\left(\vartheta^{(t+1)} \mid \bfy\right) }{p\left(\theta^{(t)} \mid \bfy\right)}
+ \frac{g\left(\theta^{(t)} \right)}{g\left(\vartheta^{(t+1)} \right)}
+ \right\} .
+$$
+
+\vspace{1mm}
+
+\alert{You have to be careful to choose an instrumental distribution $g$ that has heavier tails than the target.}
+\end{enumerate}
+}
+
+
+
+\frame{
+\sffamily
+\frametitle{The Metropolis-Hastings algorithm}
+\begin{itemize}
+\item  {\bf Example (autoregressive models):  }  Consider a zero-mean autoregressive process of the form 
+\begin{align*}
+y_t &= \phi y_{t-1} + \epsilon_t    &    \epsilon_t &\sim \normal(0, \sigma^2)
+\end{align*}
+where $\sigma^2$ is known and $\phi$ is unknown.  It is customary to assume that the process is stationary, which requires $y_1 \sim \normal\left( 0, \frac{\sigma^2}{1 - \phi^2} \right)$ and a prior for $\phi
+$ with support only on $[-1,1]$ (e.g., a uniform).  
+\end{itemize}
+}
+
+
+
+\frame{
+\sffamily
+\frametitle{The Metropolis-Hastings algorithm}
+\begin{itemize}
+\item  {\bf Example (autoregressive models, cont):  }  The posterior distribution for this problem is
+\begin{multline*}
+p(\phi \mid \bfy) \propto \left(1 - \phi^2 \right)^{\frac{1}{2}} 
+\exp\left\{ -\frac{(1 - \phi^2)}{\sigma^2} y_1^2 \right\}  \\
+%
+\exp\left\{ -\frac{1}{2\sigma^2} \left[ \phi^2 \sum_{t=2}^{n} y_{t-1}^2 - 2\phi\sum_{t=2}^{n} y_ty_{t-1} \right]   \right\}  \ind_{(-1 \le \phi \le 1)}
+\end{multline*}
+
+Note that this posterior IS NOT tractable.  However, if you drop the first two terms (which come from $p(y_1 \mid \phi)$) then the remainder looks like the kernel of a Gaussian distribution.
+\end{itemize}
+}
+
+
+
+\frame{
+\sffamily
+\frametitle{The Metropolis-Hastings algorithm}
+\begin{itemize}
+\item  {\bf Example (autoregressive models, cont):  }  This suggest using independent proposal for you MCMC of the form
+\begin{align*}
+\vartheta \sim \normal\left( \vartheta \mid
+\frac{\sum_{t=2}^{T} y_t y_{t-1}}{\sum_{t=2}^{T}y_t^2},
+\frac{1}{\sum_{t=2}^{T}y_t^2}
+\right) \ind_{(-1 \le \vartheta \le 1)}
+\end{align*}
+
+
+Because this distribution contains almost all of the information in the data (particularly if $n$ is large), we expect it to be very close to the true posterior.  Also, because the target has a compact support we are not too concerned about the effect of the tails of $g$ on the performance of the algorithm.
+\end{itemize}
+}
+
+
+
+\frame{
+\sffamily
+\frametitle{The Metropolis-Hastings algorithm}
+\begin{itemize}
+\item  {\bf Example (autoregressive models, cont):  }  The acceptance rate in this case is simply
+\begin{align*}
+\rho(\vartheta, \phi) = \min\left\{ 1,  \sqrt{\frac{1 - \vartheta^2}{1 - \phi^2}} \exp\left\{ \frac{y_1^2(\vartheta^2 - \phi^2)}{2\sigma^2}
+ \right\} \right\}
+\end{align*}
+
+
+Which depends only on the term we dropped out when generating our proposal!
+\end{itemize}
+}
+
+
+\frame{
+\sffamily
+\frametitle{The Metropolis-Hastings algorithm}
+{\bf Suggested exercise:  } Write code that implements the previous algorithm and try it on a simulated dataset with true parameters $\phi = 0.95$, $\sigma^2=1$ and $n=100$.  Provide estimates of the posterior mean and a 95\% symmetric credible interval for $\phi$.
+}
+
+
+
+\frame{
+\sffamily
+\frametitle{The Metropolis-Hastings algorithm}
+\begin{itemize}
+\item The Metropolis-Hastings algorithm is very general and we have a lot of freedom in choosing proposals.  However, there are some constraints:
+\begin{itemize}
+\item For the algorithm to work, we need to ensure that the chain is irreducible.  One way to ensure this is ensure that the support of the proposal $q(\vartheta | \theta)$ contains the support of $f$ for every $\theta$.
+
+\item We also need to ensure the chain is reversible, which (roughly speaking) requires that if $q(\vartheta \mid \theta) > 0$  then also $q(\theta \mid \vartheta) > 0$
+
+\item Positive recurrence is typically not an issue once you have ensured irreducibility. 
+
+\item Aperiodicity is also typically not a problem (for most situation you would actually need to do some work to get a periodic chain).
+\end{itemize}
+\end{itemize}
+}
+
+
+
+\frame{
+\sffamily
+\frametitle{The Metropolis-Hastings algorithm}
+\begin{itemize}
+\item Why does the Metropolis-Hastings work?  Because of the reversibility of the chain.
+
+\item Note that the transition kernel associated with the Metropolis-Hastings algorithm is 
+$$
+K(\theta_{t-1}, \theta_t) = \rho(\theta_{t}, \theta_{t-1})q(\theta_t, \theta_{t-1}) + \{ 1 - r(\theta_{t-1}) \} \delta_{\theta_{t-1}(\theta_t)}
+$$
+where $\delta_x$ denotes the Dirac mass at $x$ and 
+$$
+r(\theta) = \int \rho(\vartheta, \theta) q(\vartheta \mid \theta) \dd \vartheta
+$$
+\end{itemize}
+}
+
+
+
+\frame{
+\sffamily
+\frametitle{The Metropolis-Hastings algorithm}
+\begin{itemize}
+\item Using the formula for $\rho(\vartheta, \theta)$ it is easy to verify that
+$$
+\rho(\theta_{t}, \theta_{t-1})q(\theta_t, \theta_{t-1}) f(\theta_{t-1})= \rho(\theta_{t-1}, \theta_{t})q(\theta_{t-1}, \theta_{t})f(\theta_{t})
+$$
+and 
+$$
+\{ 1 - r(\theta_{t-1}) \} \delta_{\theta_{t-1}(\theta_t)} f(\theta_{t-1}) =  \{ 1 - r(\theta_{t}) \} \delta_{\theta_{t}(\theta_{t-1})} f(\theta_{t})
+$$
+which shows that the algorithm satisfies the detailed balance equations!
+\end{itemize}
+}
+
+
+
+

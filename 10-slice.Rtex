@@ -1,0 +1,207 @@
+\frame{
+\sffamily
+\frametitle{Slice samplers}
+\begin{itemize}
+\item  The idea of introducing auxiliary random variables to simplify sampling can be used to construct a very general class of algorithms called slice samplers \citep{damien1999gibbs,neal2003slice}
+
+\item In the simplest case, consider a (\textit{possibly unnormalized}) univariate density $p(\theta)$.  From our discussion of the rejection sampler, recall that if we are able to sample pairs $(X,U)$ uniformly on the region 
+$$
+A = \left\{ (x,u) : x \in \mbox{supp} p, 0 \le u \le p(x) \right\} ,
+$$
+then, marginally, $X \sim \frac{p(x)}{\int p(x) \dd x}$.
+\end{itemize}
+}
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Slice samplers}
+\begin{itemize}
+
+\item The joint density of $(X,U)$ is given by
+$$
+p(x,u) = \begin{cases}
+\frac{1}{|A|}   &   (x,u) \in A \\
+0   & otherwise
+\end{cases}
+$$
+where $|A| = \int_{-\infty}^{\infty} p(x) \dd x$ represents the size of $A$.
+
+\item Furthermore, note that the conditional distributions associated with a joint uniform distribution are also uniform.  That suggests using a Gibbs sampler that relies on the full conditionals
+\begin{align*}
+u \mid x &\sim \Uni [0, p(x)],   &   x \mid u &\sim \Uni \left( \{ x : u \le p(x) \} \right)
+\end{align*}
+
+Sampling from $X \mid U$ is easy as long as $p(x)$ (not $P(x)$) is easy to invert.
+\end{itemize}
+}
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Slice samplers}
+\begin{itemize}
+\item  {\bf Example (generating standard Gaussian random variates): }  We can generate from a standard Gaussian distribution if we sample uniformly on the region.
+$$
+A = \left\{ (x,u) : x \in \reals, 0 \le u \le \exp\left\{ -\frac{x^2}{2} \right\} \right\}
+$$
+(Note that I did not include the normalizing constant $\frac{1}{2\pi}$!).  
+
+\vspace{1.5mm}
+
+After a bit of algebra, the full conditionals for the slice sampler are:
+{\scriptsize \begin{align*}
+u \mid x &\sim \Uni\left[ 0, \exp\left\{ -\frac{x^2}{2} \right\} \right] , &
+x \mid u &\sim \Uni\left[ - \sqrt{-2 \log u} , \sqrt{-2 \log u} \right]  .
+\end{align*}}
+
+Remember, however, that the samples now dependent (unlike those form the Box-Muller algorithm).
+\end{itemize}
+}
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Slice samplers}
+\begin{itemize}
+\item  A more general version of the slice sampler that is useful in Bayesian inference exploits the fact that many posteriors can be written as the product of conditionally independent components.
+
+\item To be more specific consider a posterior distribution of the form
+$$
+p(\bftheta \mid \bfy) \propto p(\bftheta) \prod_{i=1}^{n} p_i(y_i \mid \bftheta)  .
+$$
+(Note that we require the $y_i$s to be -- conditionally -- independent, but not necessarily identically distributed).
+
+
+\end{itemize}
+}
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Slice samplers}
+\begin{itemize}
+\item Now, introduce independently distributed random variables $u_1, \ldots, u_n$ to form the joint distribution
+$$
+p(\bftheta, u_1, \ldots, u_n \mid \bfy) = p(\bftheta) \prod_{i=1}^{n} \ind_{\{ 0 < u_i < p(y_i \mid \bftheta) \}}  .
+$$
+As in previous cases, integrating over $u_i$ leads to our original likelihood.  
+
+\item The slice sampler involves sampling $u_i \sim \Uni \left[ 0, p(y_i \mid \bftheta) \right]$ for all $i=1, \ldots, n$ and $\bftheta$ from the prior $p(\bftheta)$ restricted to the region $\Omega$ satisfying
+$$
+\Omega = \{ \bftheta : p(y_i \mid \bftheta) < u_i \mbox{ for all } i=1,\ldots,n \}  .
+$$
+\end{itemize}
+}
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Slice samplers}
+\begin{itemize}
+\item  {\bf Example (Poisson regression, adapted from \citealp{damien1999gibbs}): } Consider a simple Poisson regression model where $y_i \mid \lambda_i \sim \Poi (\lambda_i)$ with $\log \lambda_i = \alpha + \beta x_i$ and $\alpha \sim \normal (0, \tau^2)$ and $\beta \sim \normal(0, \kappa^2)$.
+
+\vspace{1mm}
+
+The posterior distribution in this case is proportional to 
+\begin{multline*}
+\exp\left\{ -\frac{\alpha^2}{2 \tau^2} \right\} \exp\left\{ -\frac{\beta^2}{2 \kappa^2} \right\}  
+\exp\left\{ - \sum_{i=1}^{n} \left[ y_i (\alpha + \beta x_i)  \right]\right\}  \\
+%
+\prod_{i=1}^{n} \exp\left\{ - \exp\{ \alpha + \beta x_i \} \right\}
+\end{multline*}
+which has the appropriate form for us to use the slice sampler.
+\end{itemize}
+}
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Slice samplers}
+\begin{itemize}
+\item  {\bf Example (Poisson regression, adapted from \citealp{damien1999gibbs}, cont): } The obvious solution is to work with
+\begin{multline*}
+p(\bfu, \bftheta \mid \bfy) \propto \exp\left\{ -\frac{\alpha^2}{2 \tau^2}   -\frac{\beta^2}{2 \kappa^2}  -  \sum_{i=1}^{n} \left[ y_i (\alpha + \beta x_i)  \right]\right\}  \\
+%
+\prod_{i=1}^{n} \ind_{\left\{ 0 < u_i < \exp\left\{ - \exp\{ \alpha + \beta x_i \} \right\} \right\}}
+\end{multline*}
+However, in this case it is numerically more stable to introduce \textit{exponentially distributed} auxiliary variables
+\begin{multline*}
+p(\bfv, \bftheta \mid \bfy) \propto \exp\left\{ -\frac{\alpha^2}{2 \tau^2}   -\frac{\beta^2}{2 \kappa^2}  -  \sum_{i=1}^{n} \left[ y_i (\alpha + \beta x_i)  \right]\right\}  \\
+\prod_{i=1}^{n} \exp\{ -v_i\} \ind_{\left\{ v_i > \exp \{\alpha + \beta x_i\} \right\}}
+\end{multline*}
+
+\end{itemize}
+}
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Slice samplers}
+\begin{itemize}
+\item  {\bf Example (Poisson regression, adapted from \citealp{damien1999gibbs}, cont): }  The resulting slice sampler iterates through the following steps:
+\begin{enumerate}
+\item For all $i=1,\ldots, n$, sample $Z_i \sim \Exp(1)$ and let $V_i = Z_i + \exp \left\{ \alpha + \beta x_i \right\}$
+
+\item Sample $\alpha$ from a normal distribution with mean $- \tau^2 \sum_{i=1}^{n} y_i$ and variance $\tau^2$ truncated to the interval 
+$$
+\Omega_{\alpha} = \{ \alpha :  \alpha \le \min_{i} \{ \log v_i - \beta x_i \}\}.
+$$
+
+\item Sample $\beta$ from a normal distribution with mean $-\kappa^2 \sum_{i=1}^{n} x_iy_i$ and variance $\kappa^2$ truncated to the interval 
+$$
+\Omega_{\beta} = \left\{ \beta :  \max_{\{ i : x_i < 0 \}} \left\{ \frac{\log v_i - \alpha}{x_i} \right\} \le \beta \le \min_{\{ i : x_i > 0 \}} \left\{ \frac{\log v_i - \alpha}{x_i} \right\} \right\}.
+$$
+\end{enumerate}
+
+\end{itemize}
+}
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Slice samplers}
+{\bf Suggested exercise:  } Implement the slice sampler for the Poisson simple linear regression model.  
+}
+
+\frame{
+\sffamily
+\frametitle{Slice samplers}
+
+\fix discuss how to integrate above mathematical example with nimble-based computational example of next slide
+
+}
+
+\frame{
+\sffamily
+\frametitle{Slice samplers}
+
+{\footnotesize
+\begin{itemize}
+\item {\bf Example (Binomial regression):} Let's compare univariate (adaptive) Metropolis samplers vs. univariate slice samplers (see \texttt{slice-bliss.R} for NIMBLE code).
+\includegraphics[width=3in]{plots/slice-bliss}
+Both convergence and mixing are improved. (But it's entirely possible that improved mixing is counterbalanced by slower sampling time per iteration given the slice sampler's extra log-posterior evaluations as it samples horizontally.)
+Note that in this example, blocking is even more effective. 
+
+\end{itemize}
+}
+}
+
+
