@@ -384,7 +384,7 @@ using a standard Gaussian distribution for the momentum variables.
 \end{minipage}
 &
 \begin{minipage}{5.6cm}
-\includegraphics[height=4.9cm,angle=0]{hamiltonianmixture.pdf}
+\includegraphics[height=4.9cm,angle=0]{plots/hamiltonianmixture.pdf}
 \end{minipage}
 \end{tabular}
 \end{center}
