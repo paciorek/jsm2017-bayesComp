@@ -18,8 +18,7 @@ regrCode <- nimbleCode({
 ## @knitr litters-code
 glmmCode <- nimbleCode({
   for (i in 1:G) {
-      ## priors for hyperparameters
-      ## (from original example, not necessarily recommended)
+      ## priors for hyperparameters (from original example, not necessarily recommended)
      a[i] ~ dgamma(1, .001)
      b[i] ~ dgamma(1, .001)
      for (j in 1:N) {
@@ -28,8 +27,7 @@ glmmCode <- nimbleCode({
      	## likelihood 
         r[i,j] ~ dbin(p[i,j], n[i,j])
      }
-   }
-})
+   }          })
 
 ## @knitr litters-model
 consts <- list(G = 2, N = 16,
@@ -37,8 +35,7 @@ consts <- list(G = 2, N = 16,
            10,9,10,5,9,9,13,7,5,10,7,6,10,10,10,7), nrow = 2))
 data = list(r = matrix(c(13,12,12,11,9,10,9,9,8,10,8,9, 12,9,11,8,9,8,9,
                          4,8,7,11,4,4,5,5,3,7,3,7,0), nrow = 2))
-inits <- list(a = c(2, 2),
-              b = c(2, 2))
+inits <- list(a = c(2, 2), b = c(2, 2))
 ## create a model object that can be used and modified
 model <- nimbleModel(glmmCode, constants = consts, data = data, inits = inits)
 

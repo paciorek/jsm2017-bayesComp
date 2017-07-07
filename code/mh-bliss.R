@@ -198,7 +198,7 @@ apply(smp3[-seq_len(burnin), ], 2, coda::effectiveSize)
 
 ## @knitr bliss-mcmc-comparison-plots
 
-pdf(file.path('..', 'code','adaptive-bliss.pdf'), width=5, height=3.5)
+pdf(file.path('plots','adaptive-bliss.pdf'), width=5, height=3.5)
 par(mfrow = c(3,3), mai=c(0.35,.4,.2,.1),mgp=c(1.8,.7,0), cex.main = 1)
 for(i in 1:3) {
     ts.plot(smp1[ , i], ylab = params[i])

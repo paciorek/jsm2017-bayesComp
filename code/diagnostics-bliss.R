@@ -43,7 +43,7 @@ gr = gelman.diag(chains, autoburnin = FALSE)
 print(gr)
 
 ## @knitr bliss-gelman-rubin-plot
-pdf(file.path('..', 'code', 'bliss-gelman-rubin.pdf'), width=5, height=4)
+pdf(file.path('plots', 'bliss-gelman-rubin.pdf'), width=5, height=4)
 par(mfrow=c(3, 3), mai=c(0.4,.4,.3,.1),mgp=c(1.8,.7,0))
 gelman.plot(chains, autoburnin = FALSE, auto.layout = FALSE,
             col = 1:3)

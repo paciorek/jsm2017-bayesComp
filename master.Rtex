@@ -106,7 +106,7 @@
 % # if we wanted chunks by default not to be evaluated
 % # opts_chunk$set(eval = FALSE)  
 %
-% source('utils.R')
+% source('code/utils.R')
 % library(methods)
 % library(nimble)
 %
@@ -120,10 +120,9 @@
 %% end.rcode
 
 \title{Applied Bayesian Computational Methods}
-\author{Abel Rodr\'{\i}guez - UC Santa Cruz\\Christopher Paciorek - UC Berkeley}
+\author[Abel Rodr\'{\i}guez and Christopher Paciorek]{Abel Rodr\'{\i}guez (UC Santa Cruz)\\Christopher Paciorek (UC Berkeley)}
 \date{JSM Baltimore \\ July, 2017}
 
-%%% NOTE: need to fix footer %%%
 
 \begin{document}
 
@@ -147,8 +146,8 @@
 \item work on variable selection material and add Nimble example (Chris has nimbleFunction code ready from Perry's example -- either use Perry's simulated data example or use on Gelman-Hill child support dataset)
 \item replace SMC examples with NIMBLE code [will ask Nick to work on this - Abel's models are very similar to those in Nick's JSS submission]
 \item revisit GP example with VB in Stan?
-\item fix beamer footer
 \item discuss ordering of topics - Chris moved around some but not sure current ordering is ideal
+\item learning objectives
 \end{itemize}
 }
 

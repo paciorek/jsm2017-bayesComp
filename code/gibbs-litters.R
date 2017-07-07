@@ -1,8 +1,7 @@
 ## @knitr litters-code2
 glmmCode <- nimbleCode({
   for (i in 1:G) {
-      ## priors for hyperparameters
-      ## (from original example, not necessarily recommended)
+      ## priors for hyperparameters (from original example, not necessarily recommended)
      a[i] ~ dgamma(1, .001)
      b[i] ~ dgamma(1, .001)
      for (j in 1:N) {
@@ -11,7 +10,7 @@ glmmCode <- nimbleCode({
      	## likelihood 
         r[i,j] ~ dbin(p[i,j], n[i,j])
      }
-   }
+  }
 })
 
 ## @knitr litters-model2
@@ -47,7 +46,7 @@ cmcmc$run(nIts)
 smp_basic <- as.matrix(cmcmc$mvSamples)
 
 ## @knitr litters-mcmc-results
-pdf(file.path('..', 'code','gibbs-litters.pdf'), width=6, height=4)
+pdf(file.path('plots','gibbs-litters.pdf'), width=6, height=4)
 par(mfrow = c(2, 4), mai=c(0.3,.2,.4,.1),mgp=c(1.8,.7,0))
 ts.plot(smp_basic[ , 'a[1]'], main = expression(a[1]), xlab = '', ylab = '')
 ts.plot(smp_basic[ , 'b[1]'], main = expression(b[1]), xlab = '', ylab = '')

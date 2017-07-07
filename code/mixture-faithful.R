@@ -50,7 +50,7 @@ predDens <- postMeans['omega']*dnorm(xgrid, postMeans['theta[1]'], postMeans['si
 hist(y, freq = FALSE)
 lines(xgrid, predDens)
 
-pdf(file.path('..', 'code','mixture-faithful.pdf'), width=6, height=2)
+pdf(file.path('plots','mixture-faithful.pdf'), width=6, height=2)
 par(mfrow = c(1,4), mai=c(0.5,.5,.1,.1), mgp=c(1.8,.7,0),
     cex.main = 0.7)
 hist(y, xlab = 'data')

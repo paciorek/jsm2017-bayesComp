@@ -71,7 +71,7 @@ cmcmc$run(nIts)
 
 smp_slice <- as.matrix(cmcmc$mvSamples)
 
-pdf(file.path('..', 'code','slice-bliss.pdf'), width = 6, height = 3.5)
+pdf(file.path('plots','slice-bliss.pdf'), width = 6, height = 3.5)
 par(mfrow = c(2, 3), mai=c(0.4,.4,.3,.1),mgp=c(1.8,.7,0))
 for(i in 1:3) {
     ts.plot(smp_default[ , i], ylab = colnames(smp_default)[i])

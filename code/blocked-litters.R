@@ -19,7 +19,7 @@ cmcmc$run(nIts)
 
 smp_blocked <- as.matrix(cmcmc$mvSamples)
 
-pdf(file.path('..', 'plots', 'blocked-litters.pdf'), width=6, height=3)
+pdf(file.path('plots', 'blocked-litters.pdf'), width=6, height=3)
 par(mfrow = c(2,4), mai=c(0.3,.2,.4,.1),mgp=c(1.8,.7,0))
 ts.plot(smp_blocked[ , 'a[1]'], main = expression(a[1]), xlab = '', ylab = '')
 ts.plot(smp_blocked[ , 'b[1]'], main = expression(b[1]), xlab = '', ylab = '')
