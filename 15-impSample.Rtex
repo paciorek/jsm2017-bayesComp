@@ -28,7 +28,8 @@ where $w(\bftheta, \bfy) = \frac{ p(\bftheta \mid \bfy)}{g(\bftheta)}$ is a ``we
 \begin{itemize}
 \item As long as the support of $g$ contains the support of $p(\bftheta \mid \bfy)$, the WLLN ensures that if $\bftheta_1^{(1)}, \ldots, \bftheta_1^{(B)}$ are independent and identically distributed samples from $g$ then
 \begin{align*}
-\frac{1}{B}\sum_{b=1}^{B} h\left( \bftheta^{(b)} \right) w\left( \bftheta^{(b)} , \bfy \right) & \underset{B \to \infty}{\longrightarrow} \int h(\bftheta) p(\bftheta \mid \bfy) \dd \bftheta    .
+\frac{\sum_{b=1}^{B} h\left( \bftheta^{(b)} \right) w\left( \bftheta^{(b)} , \bfy \right) }
+{\sum_{b=1}^{B}  w\left( \bftheta^{(b)} , \bfy \right) }  & \underset{B \to \infty}{\longrightarrow} \E \left\{ h\left( \bftheta^{(b)} \right) \right\} 
 \end{align*}
 
 \item Almost any $g$ works in principle.  However, if you want your estimator to have a finite variance, then  you need $g$ such that
@@ -42,42 +43,6 @@ A necessary condition for this to be satisfied is that $g$ has heavier tails tha
 
 
 
-\frame{
-\sffamily
-\frametitle{Importance sampling}
-\begin{itemize}
-\item Two sets of sufficient conditions for a finite variance of the estimator are:
-\begin{itemize}
-\item Either $p(\bftheta \mid \bfy)$ has compact support and $p(\bftheta \mid \bfy) < M$ for some constant $M$,
-\item Or $\frac{p(\bftheta \mid \bfy)}{g(\bftheta)} < M$ for some $M$ and $\Var_{\bftheta \mid y} \left\{ h(\bftheta) \right\} < \infty$.
-\end{itemize}
-
-\vspace{2mm}
-
-\item In cases where $p(\bftheta \mid y)$ is unnormalized you can use instead
-\begin{align*}
-\frac{\sum_{b=1}^{B} h\left( \bftheta^{(b)} \right) w\left( \bftheta^{(b)} , \bfy \right) }
-{\sum_{b=1}^{B}  w\left( \bftheta^{(b)} , \bfy \right) }  & \underset{B \to \infty}{\longrightarrow} \E \left\{ h\left( \bftheta^{(b)} \right) \right\} 
-\end{align*}
-Even when $p(\bftheta \mid y)$ is normalized, this estimator tends to perform better.
-\end{itemize}
-}
-
-
-
-
-\frame{
-\sffamily
-\frametitle{Importance sampling}
-\begin{itemize}
-\item The optimal importance sampling distribution is not necessarily a good approximation to $p(\bftheta \mid \bfy)$.  Rather, $g(\bftheta)$ should be a good approximation to $h(\bftheta) p(\bftheta \mid \bfy)$ (which means that the optimal $g(\bftheta)$ depends on the form of $h$).
-
-\item In particular, although we will use it later in some of our algorithms, the prior is typically a poor choice of importance function.  We call algorithms that use the prior as the proposal distribution \textit{bootstrap filters}.
-
-\item Some of the analytic approximation methods we will discuss later can be used to guide the selection of instrumental distributions in importance sampling.
-\end{itemize}
-}
-
 
 
 
@@ -86,7 +51,8 @@ Even when $p(\bftheta \mid y)$ is normalized, this estimator tends to perform be
 \frametitle{Importance sampling}
 \begin{itemize}
 
-\item To illustrate that the posterior might not be the optimal importance function, consider estimating $p = \Pr(X > 2)$ where $X\sim \Cauchy(0,1)$.
+\item The optimal importance sampling distribution should be a good approximation to 
+$h(\bftheta) p(\bftheta \mid \bfy)$ rather than a good approximation to $p(\bftheta \mid \bfy)$.  For example, consider $p = \Pr(X > 2)$ where $X\sim \Cauchy(0,1)$.
 
 \begin{itemize}
 \item  The naive estimator is given by 
@@ -99,7 +65,7 @@ where $x^{(b)} \sim \Cauchy(0,1)$.  Its variance $0.127/B$.
 $$
 \hat{p}_2 = \frac{1}{B} \sum_{b=1}^{B} \frac{ \left( x^{(b)} \right)^{-2} }{2\pi \left\{ 1 + \left( x^{(b)} \right)^{-2} \right\}} ,
 $$
-where $x^{(b)} \sim \Uni[0,1/2]$.  Its variance $0.95 \times 10^{-1}/B$.
+where $x^{(b)} \sim \Uni[0,1/2]$.  Its variance $0.095/B$.
 \end{itemize}
 
 \end{itemize}
@@ -107,32 +73,14 @@ where $x^{(b)} \sim \Uni[0,1/2]$.  Its variance $0.95 \times 10^{-1}/B$.
 
 
 
-\frame{
-\sffamily
-\frametitle{Importance sampling}
-\begin{itemize}
-\item We actually know that the optimal choice of $g$ to minimize the variance of the WLLN estimator is
-$$
-g^{*}(\bftheta) = \frac{ \left| h(\bftheta) \right| p(\bftheta \mid \bfy)}{\int \left| h(\bfvartheta) \right| p(\bfvartheta \mid \bfy) \dd \bfvartheta} .
-$$
-However, this result has little practical import because we usually cannot generate from this $g^{*}$!
-
-\item In practical terms, we look for a distribution $g$ with tails at least as heavy as those of the posterior and for which $|h(\bftheta)| p(\bftheta \mid \bfy) / g(\bftheta)$ is approximately constant with finite variance.
-
-\end{itemize}
-}
-
-
 
 \frame{
 \sffamily
 \frametitle{Importance sampling}
 \begin{itemize}
-\item Requiring $|h(\bftheta)| p(\bftheta \mid \bfy) / g(\bftheta)$ to be about constant means that we want weights that are as uniform as possible (i.e., we want low variance for the weights).
-
-\item A way to summary the information on the variance of the weights is through the equivalent sample size:
+\item A way to evaluate the efficiency of the algorithm is through the equivalent sample size (ESS):
 $$
-ESS =   \frac{\left( \sum_{b=1}^{B} \omega_i \right)^2}{\sum_{b=1}^{B} \omega^2_i}  .
+ESS =   \frac{\left\{ \sum_{b=1}^{B} w\left( \bftheta^{(b)} , \bfy \right) \right\}^2}{\sum_{b=1}^{B} \left\{ w\left( \bftheta^{(b)} , \bfy \right)\right\}^2 }  .
 $$
 The interpretation of this ESS is analogous to that of the ESS we discussed for MCMC methods.  In particular, if all the weights are identical then $ESS = B$, while if all weight is concentrated on a single particle then $ESS = 1$.
 \end{itemize}
@@ -150,14 +98,14 @@ The interpretation of this ESS is analogous to that of the ESS we discussed for 
 \left( \frac{1}{1 + \theta^2} \right) \exp \left\{ -\frac{n}{2} \left(  \theta^2 - 2 \theta \bar{y} \right) \right\}  .
 \end{align*}
 
-Assume that we are interested in the optimal point estimator under squared error loss (i.e., the posterior mean), which in this case corresponds to 
+We are interested in computing the posterior mean: 
 \begin{align*}
 \E\left\{ \theta \mid \bfy \right\} = \frac{\int_{-\infty}^{\infty} \left( \frac{\theta}{1 + \theta^2} \right) \exp \left\{ -\frac{n}{2} \left(  \theta^2 - 2 \theta \bar{y} \right)  \right\}  \dd \theta
 }
 %
 { \int_{-\infty}^{\infty} \left( \frac{1}{1 + \theta^2} \right) \exp \left\{ -\frac{n}{2} \left(  \theta^2 - 2 \theta \bar{y} \right)  \right\}  \dd \theta}.
 \end{align*}
-It should be clear that no analytic solution for this expectation is available.
+An analytic solution for this expectation is not available.
 \end{itemize}
 }
 
@@ -168,34 +116,27 @@ It should be clear that no analytic solution for this expectation is available.
 \sffamily
 \frametitle{Importance sampling}
 \begin{itemize}
-\item {\bf Example (unknown Gaussian mean with Cauchy priors):  }  Let's discuss a couple of different importance sampling schemes.  One of the most naive options is to use the prior as an importance distribution (the so-called \textit{bootstrap sampler}), so that
+\item {\bf Example (unknown Gaussian mean with Cauchy priors):  }  You could use the prior as the importance distribution:
 $$
 \E\left\{ \theta \mid \bfy \right\} \approx \frac
 {\sum_{b=1}^{B} \theta^{(b)} \exp \left\{ -\frac{n}{2} \left(  \theta^{(b)2} - 2 \theta^{(b)} \bar{y} \right)  \right\}  }
 {\sum_{b=1}^{B} \exp \left\{ -\frac{n}{2} \left(  \theta^{(b)2} - 2 \theta^{(b)} \bar{y} \right)  \right\}  }.
 $$
-This estimator is implemented in the file \texttt{impsampex\_v1.R} (you will also need the file \texttt{impsampex\_data.txt}).  Note that just a few samples (located around the mean of the data) receive most of the weight!  Accordingly, the ESS is very small (around 4). Hence, this estimator has a very large variance (run the algorithm multiple times to get a sense of the Monte Carlo error).
-\end{itemize}
-}
+This estimator is implemented in \texttt{impsampex\_v1.R}.  
+%Note that just a few samples (located around the mean of the data) receive most of the weight!  Accordingly, the ESS is very small (around 4). Hence, this estimator has a very large variance (run the algorithm multiple times to get a sense of the Monte Carlo error).
 
-
-
-
-
-\frame{
-\sffamily
-\frametitle{Importance sampling}
-\begin{itemize}
-\item {\bf Example (unknown Gaussian mean with Cauchy priors):  }  A more reasonable importance function would use our knowledge about the location of the posterior.  In particular, recall that the likelihood function is centered on $\hat{y}$ and has variance $1/n$.  Hence, we might try to use a Cauchy that reflects this knowledge as our importance distribution.  This leads to:
-
+A more reasonable importance function use knowledge about the shape of $p(\theta \mid \bfy)$
 {\scriptsize $$
 \E\left\{ \theta \mid \bfy \right\} \approx \frac
 {\sum_{b=1}^{B} \theta^{(b)}  \left( \frac{1 +  n\{\theta^{(b)} - \bar{y}\}^2}{1 + \theta^{2(b)}} \right) \exp \left\{ -\frac{n}{2} \left(  \theta^{(b)2} - 2 \theta^{(b)} \bar{y} \right)  \right\}  }
 {\sum_{b=1}^{B} \left( \frac{1 +  n\{\theta^{(b)} - \bar{y}\}^2}{1 + \theta^{2(b)}} \right) \exp \left\{ -\frac{n}{2} \left(  \theta^{(b)2} - 2 \theta^{(b)} \bar{y} \right)  \right\}  }.
 $$ }
-where $\theta^{(b)} \sim \Cauchy(\bar{y}, 1/n)$.  This estimator is implemented in the file \texttt{impsampex\_v2.R}.  Note that the weights are more evenly distributed and the variance of the estimator much lower.  Accordingly $ESS \approx 7,480$ in this case.
+where $\theta^{(b)} \sim \Cauchy(\bar{y}, 1/n)$.  See \texttt{impsampex\_v2.R}.
+
 \end{itemize}
 }
+
+
 
 
 
@@ -206,27 +147,12 @@ where $\theta^{(b)} \sim \Cauchy(\bar{y}, 1/n)$.  This estimator is implemented 
 \sffamily
 \frametitle{Importance sampling}
 \begin{itemize}
-\item As an side, note that importance sampling schemes can also be interpreted as providing an approximation to $p(\bftheta \mid \bfy)$.
-
-\item Indeed, consider the discrete approximation 
+\item Importance sampling schemes can also be interpreted as providing an approximation to $p(\bftheta \mid \bfy)$:
 $$
 \hat{p}_{B}(\bftheta \mid \bfy) =  \sum_{b=1}^{B}  \omega \left(\bftheta^{(b)}, \bfy \right) \delta_{\bftheta^{(b)}} (\bftheta)  ,
 $$
-where $\delta_x (\bftheta)$ denotes the Dirac point mass at $x$ and 
-$$
-\omega \left(\bftheta^{(b)}, \bfy \right)= \frac{p\left( \bftheta^{(b)} \mid \bfy \right) / g\left( \bftheta^{(b)} \right)} 
-{\sum_{s=1}^{B} p\left( \bftheta^{(s)} \mid \bfy \right) / g\left( \bftheta^{(s)} \right)}  .
-$$
-\end{itemize}
-}
+where $\delta_x (\bftheta)$ denotes the Dirac point mass at $x$.
 
-
-
-
-\frame{
-\sffamily
-\frametitle{Importance sampling}
-\begin{itemize}
 \item Then, a fancy way to write the importance sampling estimator is as
 $$
 \int h(\bftheta) \hat{p}_B(\bftheta \mid y) \dd \bftheta \to \int h(\bftheta) p_B(\bftheta \mid y) \dd \bftheta  .
@@ -235,8 +161,6 @@ Since this is true for any integrable function $h$, it implies that
 \begin{align*}
  \hat{p}_B(\bftheta \mid y)  &\to p_B(\bftheta \mid y)   & \mbox{ in distribution}  .
 \end{align*}
-
-\item This type of \text{particle representation} will be useful in working with sequential Monte Carlo algorithms.
 \end{itemize}
 }
 

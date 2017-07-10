@@ -4,11 +4,11 @@
 \sffamily
 \frametitle{The Laplace approximation}
 \begin{itemize}
-\item We move now to consider computational techniques that rely on approximating the posterior distribution with a more tractable alternative.  We start with the Laplace approximation.
+\item An alternative to variational approximations are Laplace approximations.
 
 \item The Laplace approximation is a simple yet powerful asymptotic expansion of the posterior distribution that goes back to Laplace in 1774!
 
-\item There are different variants of the technique, but the main argument is similar in all cases:  Assume that $y_1, \ldots, y_n$ are independent and identically distributed with $y_i \mid \bftheta \sim p(y_i \mid \bftheta)$ so that the (unnormalized) posterior can be written as
+\item There are different variants of the technique, but the main argument is similar in all cases:  Start by assuming that $y_1, \ldots, y_n$ are independent and identically distributed with $y_i \mid \bftheta \sim p(y_i \mid \bftheta)$ so that the posterior takes the form
 $$
 %  p(\bfy \mid \bftheta) p(\bftheta)
 p( \bftheta \mid \bfy ) \propto \exp \left\{ - n h_n(\bftheta) \right\} ,
@@ -55,12 +55,10 @@ which corresponds to a Gaussian kernel!
 \item Note that the contribution of the prior drops out faster than the contribution from the likelihood.  Therefore, alternatively,
 \begin{multline*}
 p( \bftheta \mid \bfy )  \overset{\boldsymbol{\cdot}}{\propto} \exp \left\{ 
- \left[ \left. \nabla p\left( \bfy \mid \bftheta \right) \right|_{\bftheta= \bftheta_0}\right]^{T} \left[ \bftheta - \bftheta_0 \right] \right. \\
+ \left[ \left. \nabla \log p\left( \bfy \mid \bftheta \right) \right|_{\bftheta= \bftheta_0}\right]^{T} \left[ \bftheta - \bftheta_0 \right] \right. \\
 %
-\left. - \frac{1}{2} \left[ \bftheta - \bftheta_0 \right]^{T} \left[ \left. - \nabla \nabla p \left( \bfy \mid \bftheta \right)  \right|_{\bftheta = \bftheta_0} \right] \left[ \bftheta - \bftheta_0 \right]   \right\} .
+\left. - \frac{1}{2} \left[ \bftheta - \bftheta_0 \right]^{T} \left[ \left. - \nabla \nabla \log p \left( \bfy \mid \bftheta \right)  \right|_{\bftheta = \bftheta_0} \right] \left[ \bftheta - \bftheta_0 \right]   \right\} .
 \end{multline*}
-
-\item This last version of the approximation is the basis for the derivation of the BIC, as well as for the ``Bayesian CLT''.
 \end{itemize}
 }
 
@@ -77,14 +75,15 @@ p( \bftheta \mid \bfy )  \overset{\boldsymbol{\cdot}}{\propto} \exp \left\{
 \begin{multline*}
 p( \bftheta \mid \bfy )  \overset{\boldsymbol{\cdot}}{\propto} \\
 %
-\exp \left\{ - \frac{1}{2} \left[ \bftheta - \hat{\bftheta} \right]^{T} \left[ \left. - \nabla \nabla p \left( \bfy \mid \bftheta \right)  \right|_{\bftheta = \bftheta_0} \right] \left[ \bftheta - \hat{\bftheta} \right]   \right\}
+\exp \left\{ - \frac{1}{2} \left[ \bftheta - \hat{\bftheta} \right]^{T} \left[ \left. - \nabla \nabla \log p \left( \bfy \mid \bftheta \right)  \right|_{\bftheta = \hat{\bftheta}} \right] \left[ \bftheta - \hat{\bftheta} \right]   \right\}
 \end{multline*}
-where the matrix $\left. - \nabla \nabla p \left( \bfy \mid \bftheta \right)  \right|_{\bftheta = \hat{\bftheta}}$ is called the \textit{observed} information matrix.  That is 
+where the matrix $\left. - \nabla \nabla \log p \left( \bfy \mid \bftheta \right)  \right|_{\bftheta = \hat{\bftheta}}$ is called the \textit{observed} information matrix.  That is 
 $$
-\bftheta \mid \bfy \overset{\boldsymbol{\cdot}}{\sim} \normal\left( \hat{\bftheta} , \left[ \left. - \nabla \nabla p \left( \bfy \mid \bftheta \right)  \right|_{\bftheta = \bftheta_0} \right]^{-1} \right)
+\bftheta \mid \bfy \overset{\boldsymbol{\cdot}}{\sim} \normal\left( \hat{\bftheta} , \left[ \left. - \nabla \nabla \log p \left( \bfy \mid \bftheta \right)  \right|_{\bftheta = \hat{\bftheta}} \right]^{-1} \right)
 $$
 \end{itemize}
 
+\item This last version of the approximation is the basis for ``Bayesian CLT'', as well as for the derivation of the BIC.
 \end{itemize}
 }
 
@@ -95,7 +94,7 @@ $$
 \sffamily
 \frametitle{The Laplace approximation}
 \begin{itemize}
-\item Although technically the result is valid for any parameterization, typically appropriate transformations (e.g., logarithm, logit) are applied to the parameters before the approximation.
+\item Although technically the result is valid for any parameterization, maing appropriate transformations (e.g., logarithm, logit) might improve the accuracy.
 
 \item The Laplace approximation can be very accurate for large $n$, but in complicated hierarchical models with a large number of hyperparameters the approximation can be very poor!
 
@@ -112,7 +111,7 @@ $$
 \sffamily
 \frametitle{The Laplace approximation}
 \begin{itemize}
-\item {\bf Example (Poisson-Gamma models): }  Consider data $y_1, \ldots, y_n$ where $y_i \sim \Poi (\lambda)$ and $\lambda \sim \Gam(a, b)$  The posterior distribution (which is known to be a $\Gam\left( a + \sum_{i=1}^{n} y_i + a , n + b \right)$ distribution) can be written as $p(\lambda \mid \bfy) \propto \left\{ - n h_n(\lambda) \right\}$ where 
+\item {\bf Example (Poisson-Gamma models): }  Consider data $y_1, \ldots, y_n$ where $y_i \sim \Poi (\lambda)$ and $\lambda \sim \Gam(a, b)$  The posterior distribution (which is known to be a $\Gam\left( a + \sum_{i=1}^{n} y_i , n + b \right)$ distribution) can be written as $p(\lambda \mid \bfy) \propto \left\{ - n h_n(\lambda) \right\}$ where 
 $$
 h_n(\lambda) = - \lambda \frac{n+b}{n} + \frac{a - 1 + \sum_{i=1}^{n} y_i}{n} \log \lambda .
 $$
@@ -176,28 +175,6 @@ If $a$ is large and $n$ small, the differences can be substantial!
 
 
 
-\frame{
-\sffamily
-\frametitle{The Laplace approximation}
-\begin{itemize}
-\item {\bf Example (Poisson-Gamma models): }  The following table compares the exact posterior mean against these two approximation for different random samples with $\bar{y} = 2$ and different priors.
-\begin{center}
-\begin{tabular}{ccccc}
-  $n$   &   $(a,b)$   &   Exact   &   Like + Prior   &  Like only \\ \hline\hline
-  10     &              &   1.91   &   1.82   &   2.00   \\
-  50   &  $(1,1)$ &   1.98   &   1.96   &   2.00   \\
-  500 &              &  2.00    &   2.00   &   2.00   \\ \hline
-  10     &              &   2.16   &   2.06   &   2.00   \\
-  50   &  $(2,1/5)$ &   2.03   &   2.01   &   2.00   \\
-  500 &              &   2.00   &   2.00   &   2.00   \\ \hline
-\end{tabular}
-\end{center}
-
-The file \texttt{LaplaceapproximationPoissonGamma.R} contains the code used to generate this table.
-\end{itemize}
-}
-
-
 
 \frame{
 \sffamily
@@ -223,24 +200,13 @@ The file \texttt{LaplaceapproximationPoissonGamma.R} contains the code used to g
 
 \frame{
 \sffamily
-\frametitle{The Laplace approximation}
-{\bf Suggested exercise:}  Repeat the previous exercise but working with $\theta = \log (\lambda)$.  You should see an improvement in the estimates of the tail probabilities.
-}
-
-
-
-
-
-
-\frame{
-\sffamily
 \frametitle{Integrated Nested Laplace Approximations}
 \begin{itemize}
-\item INLA is designed for hierarchical models where
+\item INLA is designed for hierarchical models:
 \begin{align*}
 y_i \mid \theta_i, \bfeta_1 &\sim p(y_i \mid \theta_i, \bfeta_1)    &    \bftheta \mid \bfeta_2 & \sim \normal \left( \mathbf{0} , \mathbf{Q}(\bfeta_2)  \right)  ,
 \end{align*}
-where $(\bfeta_1^T, \bfeta_2T^) \sim p(\bfeta_1, \bfeta_2)$ and $m = \mbox{dim} (\bfeta_1) + \mbox{dim} (\bfeta_2)$ is small (usually $\le 6$).
+where $\bfeta = (\bfeta_1, \bfeta_2) \sim p(\bfeta_1, \bfeta_2)$ and $m = \mbox{dim} (\bfeta_1) + \mbox{dim} (\bfeta_2)$ is small (usually $\le 6$).
 
 \item Particularly useful if $\mathbf{Q}(\bfeta_2)$ is sparse.
 
@@ -270,13 +236,11 @@ $$
 $$
 \tilde{p}(\bfeta \mid \bfy) \propto \left. \frac{p(\bftheta, \bfeta, \bfy)}{\tilde{p}_G(\bftheta \mid \bfeta, \bfy)} \right|_{\bftheta = \hat{\bftheta}(\bfeta)}
 $$
-where $\tilde{p}_G(\bftheta \mid \bfeta, \bfy)$ is a Gaussian approximation to the full conditional of $\bftheta$ (obtained by a Laplace approximation),
+where $\tilde{p}_G(\bftheta \mid \bfeta, \bfy)$ is a Gaussian approximation to the full conditional of $\bftheta$
 $$
 p(\bftheta \mid \bfeta, \bfy) \propto \exp \left\{ -\frac{1}{2} \bftheta^T \mathbf{Q}\left(\bfeta_2\right) \bftheta + \sum_{i} \log\left\{ p(y_i \mid \theta_i, \bfeta_1) \right\} \right\}
 $$
-and $\hat{\bftheta}(\bfeta) = \arg\max_{\bftheta} p(\bftheta \mid \bfeta, \bfy)$.
-
-\item This is just the Laplace approximation around the posterior mode we discussed before.
+and $\hat{\bftheta}(\bfeta) = \arg\max_{\bftheta} p(\bftheta \mid \bfeta, \bfy)$.  This is just the Laplace approximation around the posterior mode.
 \end{itemize}
 }
 
@@ -335,7 +299,7 @@ $$
 
 \item The integral can be computed using standard numerical integration techniques.
 
-\item However, it is much more efficient to reuse the grid of values used in the definition $\tilde{p}^{*}(\bfeta \mid \bfy)$ rather than a completely new grid that is aligned to the axis to construct an interpolator, which is then used for the numerical integration procedure.
+\item However, it is much more efficient to construct the numerical integrator by reusing the grid of values used in the definition $\tilde{p}^{*}(\bfeta \mid \bfy)$ (which is aligned with the principal axes of the distribution) rather than a completely new grid aligned to the original axes.
 \end{itemize}
 }
 
@@ -393,12 +357,12 @@ where $\tilde{p}_{GG}(\bftheta_{-i} \mid \theta_i, \bftheta, \bfy)$ is a Gaussia
 \begin{itemize}
 \item Currently your software options are R-INLA and the related TMB software.
 \item NIMBLE is very close to having automatic differentiation, which is important for Laplace-based methods as they need gradients.
-\item At that point, one of our target algorithms will be INLA so I hope to see that in NIMBLE within a year.
+\item At that point, one of our target algorithms will be INLA so we hope to see that in NIMBLE within a year.
 \item Our hope is that by providing in NIMBLE, users can:
 \begin{itemize}
-\item use BUGS code to specify their model
-\item use distributions and model structures not provided in R-INLA
-\item more readily compare results with other algorithms
+\item use BUGS code to specify their model,
+\item use distributions and model structures not provided in R-INLA, and
+\item more readily compare results with other algorithms.
 \end{itemize}
 \end{itemize}
 

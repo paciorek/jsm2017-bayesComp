@@ -1,5 +1,6 @@
 
 
+
 \frame{
 \sffamily
 \frametitle{Diagnostics for MCMC algorithms}
@@ -9,21 +10,12 @@
 \item Convergence.
 \item Mixing.
 \end{itemize}
-\end{itemize}
-}
 
-
-
-
-\frame{
-\sffamily
-\frametitle{Diagnostics for MCMC algorithms}
-\begin{itemize}
 \item \alert{Mixing:}  As with every Monte Carlo algorithm an important question is how many samples should be generated in order to have estimates of the parameters with a reasonable level of accuracy. 
 \begin{itemize}
 \item However, because samples are (most usually positively) correlated, standard theory (standard central limit theorems, Chebyshev's inequality, etc.) does not apply here!
 
-\item Mixing is also related to how fast the high probability areas of the posterior distribution are explored.
+\item Mixing is related to how fast the chain explores the posterior distribution.
 \end{itemize}
 \end{itemize}
 }
@@ -51,7 +43,7 @@
 \sffamily
 \frametitle{Diagnostics for MCMC algorithms}
 \begin{itemize}
-\item These two questions are interrelated, but are not identical.  For example, you can accelerate convergence to the posterior by carefully selecting the initial state of your chain even if the chain mixes slowly.  On the other hand, even if your initial state is really distributed from the stationary distribution (e.g., by using perfect sampling), you might need to run a very long chain to have an acceptable level of uncertainty in your estimates because the autocorrelation in the parameters of interest can be very high.
+\item These two questions are interrelated, but are not identical.  For example, you can accelerate convergence to the posterior by carefully selecting the initial state of your chain even if the chain mixes slowly.  On the other hand, even if your initial state is really distributed from the stationary distribution (e.g., by using perfect sampling), you might need to run a very long chain to have an acceptable level of uncertainty in your estimates if the autocorrelation in the parameters of interest is very high.
 
 \item Time series plots of the realized chains (the so-called \textit{trace} plots) provide visual intuition about these two concepts, and can be used as an informal check (which should be supplemented with some of the formal techniques discussed later).
 \end{itemize}
@@ -76,7 +68,7 @@
 \sffamily
 \frametitle{Checking for convergence}
 \begin{itemize}
-\item Generally speaking, determining \textit{a priori} how many iterations are needed for burn-in in not possible.  Indeed, except for some special cases, general theory about the behavior of the algorithm (e.g., the value of the largest eigenvalue of the kernel function) is not easy to derive.
+\item Generally speaking, determining \textit{a priori} how many iterations are needed for burn-in in not possible.  Indeed, except for some special cases, general theory about the behavior of the algorithm (e.g., the value of the second largest eigenvalue of the kernel function) is not easy to derive.
 
 \item For this reason, most practical algorithms to monitor convergence look at the time-series behavior of a small number of selected parameters (or functions of parameters).
 \begin{itemize}
@@ -100,7 +92,7 @@
 \begin{itemize}
 \item As the name suggests multi-chain methods use $M > 1$ realizations of the algorithm (each of length $B$, typically started from ``over dispersed'' values) and compare the output of the chains.  Once the statistical properties of the realizations appear to be similar, the chains are deemed to have converged.
 
-\item Once example of this type of approach was introduced by \cite{GeRu92} who propose to monitor a statistic that compares the average within-chain variability against the between-chains variability:
+\item One example of this type of approach was introduced by \cite{GeRu92} who propose to monitor a statistic that compares the average within-chain variability against the between-chain variability:
 $$
 R = \left( \frac{B-1}{B} + \frac{M+1}{M} \frac{Z_B}{W_B} \right) \frac{\nu_B}{\nu_B - 2} ,
 $$
@@ -159,24 +151,25 @@ $$
 
 
 \begin{center}
-\hspace{-1.1cm}
+\hspace{-0.9cm}
 \begin{tabular}{lr}
-\begin{minipage}{4.5cm}
+\begin{minipage}{5.5cm}
+
 %% begin.rcode bliss-setup, include=FALSE
 %% end.rcode
 %% begin.rcode bliss-model, include=FALSE
 %% end.rcode
 %% begin.rcode bliss-mcmc-trialrun, include=FALSE
 %% end.rcode
-%% begin.rcode bliss-mcmc-twoStarts, include=FALSE, size='tiny'
+%% begin.rcode bliss-mcmc-twoStarts, include=FALSE
 %% end.rcode
-%% begin.rcode bliss-gelman-rubin
+%% begin.rcode bliss-gelman-rubin, size='tiny'
 %% end.rcode
 
 \end{minipage}
 %&
-\begin{minipage}{6cm}
-\includegraphics[height=5.2cm,angle=0]{plots/bliss-gelman-rubin.pdf}
+\begin{minipage}{5.5cm}
+\includegraphics[width=5.4cm,angle=0]{plots/bliss-gelman-rubin.pdf}
 \end{minipage}
 \end{tabular}
 \end{center}
@@ -193,7 +186,7 @@ $$
 
 \item However, finding over-dispersed initial points can be hard.  For example, if the posterior is multimodal and you do not start the chain at least once on each mode you might never find out.
 
-\item For slow mixing chains, inferences based on a single long chain might be more accurate than the inferences based on many small chains put together.  (However, this is an issue mostly if computational resources are limited.)
+\item For slow-mixing chains, inferences based on a single long chain might be more accurate than the inferences based on many small chains put together.  (However, this is an issue mostly if computational resources are limited.)
 \end{itemize}
 }
 
@@ -220,7 +213,7 @@ $$
 \sffamily
 \frametitle{Mixing}
 \begin{itemize}
-\item Again, I want to emphasize that mixing is a subtly different problem from convergence.
+\item Again, it must be emphasized that mixing is a subtly different problem from convergence.
 
 \item Note that a chain that mixes slowly, if started on a low-probability region of the space, might take a long time to converge.  However, if we start it in a high probability region convergence is much less of an issue.
 
@@ -274,7 +267,6 @@ $$
 \item Unless storage (in memory or on disk) is an issue, thinning is not a good idea.
 \end{itemize}
 \end{itemize}
-\fix Abel: I changed wording about thinning above, please make sure ok with you.
 }
 
 

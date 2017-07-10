@@ -41,9 +41,7 @@ The machine in this case is a graphical model (in particular, a
   \textit{directed acyclic graph}).  A \textit{node} (sometimes called
 a \textit{vertex}) holds one value, which may be a scalar or a vector.
 \textit{Edges} define the relationships between nodes.  A huge variety
-of statistical models can be thought of as graphs.  
-
-See also:
+of statistical models can be thought of as graphs.  See also:
 \begin{itemize}
 \item Chapter 5 of the NIMBLE manual -- http://r-nimble.org/documentation
 \item the BUGS manual -- http://www.openbugs.net/Manuals/ModelSpecification.html
@@ -66,7 +64,7 @@ See also:
 \end{column}%
 
 \begin{column}{.48\textwidth}
-\includegraphics[width=2.25in]{plots/linearRegressionGraph-crop.pdf}
+\includegraphics[width=2.2in]{plots/linearRegressionGraph-crop.pdf}
 \end{column}%
 \end{columns}
 
@@ -88,8 +86,7 @@ y[i] ~ dnorm(intcpt + slope * x[i], sd = sigma)
 
 {\footnotesize
 \begin{itemize}
-\item The litters model from the original 1995 BUGS software has data on rat pup survival for pups in 16 litters in each of two groups.
-\item Survival of the pups in a litter is governed by a survival probability specific  to the litter.
+\item The litters model from the original 1995 BUGS software has data on rat pup survival for pups in 16 litters in each of two groups.  Survival within a litter is governed by a survival probability specific to the litter.
 \item Probabilities for each group are treated as being exchangeable, coming from a common beta distribution to induce shrinkage. 
 
 %% begin.rcode litters-code, eval=FALSE, size='tiny'
@@ -146,11 +143,5 @@ You can move values into and out of the model, simulate from the priors, and cal
 }
 \end{frame}
 
-\begin{frame}[fragile] 
-\sffamily
-\frametitle{Discussion}
 
-How would we write a simple mixture of normals model for a simple vector of observations?
-
-\end{frame}
 

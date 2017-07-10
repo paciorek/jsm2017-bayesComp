@@ -1,13 +1,28 @@
 
+
 \frame{
 \sffamily
 \frametitle{Hamiltonian Monte Carlo}
+\begin{center}
+\begin{tabular}{lr}
+\begin{minipage}{5.1cm}
 \begin{itemize}
-\item As the ``banana'' distribution shows, for adaptive algorithms to be really automatic we need to use the local geometry of the posterior around our current value to guide the direction of the proposal.
+\item One of the main challenges for all the previous MCMC methods is dealing with non-elliptical posteriors.
 
-\item Hamiltonian Monte Carlo algorithms implement this idea in a very clever way!
+\item We would like to exploit the local geometry of the distribution.
+
+\item HMC methods allow us to do precisely that!
 \end{itemize}
+\end{minipage}
+%&
+\begin{minipage}{5.3cm}
+\includegraphics[width=5.2cm,angle=0]{plots/banana_density.pdf}
+\end{minipage}
+\end{tabular}
+\end{center}
 }
+
+
 
 
 
@@ -45,7 +60,7 @@ where $\bftheta \in \reals^d$ is the ``position'', $\bfphi \in \reals^d$ is the 
 \sffamily
 \frametitle{Hamiltonian Dynamics}
 \begin{itemize}
-\item For our purpose, the ``position'' $\bftheta$ corresponds to our parameters of interested and
+\item For our purpose, the ``position'' $\bftheta$ corresponds to our parameters of interest and
 $$
 U(\bftheta) = -\log \left\{ p(\bftheta \mid \bfy) \right\}.
 $$
@@ -54,7 +69,7 @@ $$
 $$
 K(\bfphi) = \frac{1}{2} \bfphi^T\mathbf{M}\bfphi = \frac{1}{2} \sum_{k=1}^{d} m_k\phi_k^2.
 $$
-Can be interpreted as the kinetic energy available to $d$ springs (with constants $m_1, \ldots, m_K$) that have been stretched $\phi_1, \ldots, \phi_K$ units once they have returned to equilibrium.
+Can be interpreted as the kinetic energy available to $d$ springs (with constants $m_1, \ldots, m_K$) that have been stretched $\phi_1, \ldots, \phi_K$ units away from their equilibrium position.
 \end{itemize}
 }
 
@@ -77,7 +92,7 @@ $$
 $$
 (easy to show using Hamilton's equations and the chain rule).  
 
-\item \alert{The dynamics induced by the Hamiltonian equations are reversible.  They also preserve volume in the $(\bftheta, \bfphi)$ space.}
+\item \alert{The dynamics induced by the Hamiltonian equations are reversible.  They also preserve volume in the $(\bftheta, \bfphi)$ space (which implies a unit Jacobian).}
 \end{itemize}
 }
 
@@ -267,7 +282,7 @@ where $\phi^{(c)} \sim \normal(0,1)$.
 \begin{center}
 \begin{tabular}{lr}
 \begin{minipage}{5.6cm}
-{\small {\bf Example (bivariate normal target):}  Consider sampling from the variate normal distribution
+{\small {\bf Example (bivariate normal target):}  Consider sampling from the bivariate normal distribution
 $$
 \left(\begin{matrix}
 \theta_1  \\
@@ -345,27 +360,6 @@ $$
 
 
 
-
-
-
-
-
-
-
-
-\frame{
-\sffamily
-\frametitle{The Hamiltonian Monte Carlo algorithm}
-{\bf Suggested Exercise:  }  Implement a Hamiltonian Monte Carlo algorithm to sample from the ``banana'' distribution and compare the performance of the algorithm with that of the adaptive random walk.
-}
-
-
-
-
-
-
-
-
 \frame{
 \sffamily
 \frametitle{Hamiltonian Dynamics}
@@ -404,24 +398,14 @@ using a standard Gaussian distribution for the momentum variables.
 \vspace{3mm}
 
 \item As with RWMH, tuning HMC algorithms usually requires pilot runs for different values of $\epsilon$ and $L$.  Be careful, optimal values might be different before and after convergence!
-\end{itemize}
-}
 
-
-
-
-
-\frame{
-\sffamily
-\frametitle{Tuning}
-\begin{itemize}
 \item The value of $\epsilon L$ roughly controls how far you move from the current point.  However, a large value of $\epsilon L$ does not necessarily lead to longer-distance moves (recall the graphs for the Hamiltonian trajectories in $(\bftheta, \bfphi)$).
 
-\item Indeed, the chain produced by a Hamiltonian algorithm could potentially be periodic, but that is rarely the case in practice.  One solution is to use randomly chosen $\epsilon$ and $L$ (from a relatively narrow range) at each iteration.
-
-\item Assuming that $\epsilon L$ is kept constant, the smaller $\epsilon$ is, the closest the discretized trajectory is to the continuous time one, but more computations are required.
+\item Indeed, the chain produced by a Hamiltonian algorithm could potentially be periodic, but that is rarely the case in practice.  %One solution is to use randomly chosen $\epsilon$ and $L$ (from a relatively narrow range) at each iteration.
 \end{itemize}
 }
+
+
 
 
 
@@ -430,9 +414,11 @@ using a standard Gaussian distribution for the momentum variables.
 \sffamily
 \frametitle{Tuning}
 \begin{itemize}
-\item The rejection rate of the algorithm is controlled mainly by $\epsilon$ (i.e., how good the discrete-time approximation is).  Values of $\epsilon$ that are too big might lead to unstable trajectories and very low rejection rates, and the problem might not be obvious in pilot runs because the rejection rate might be very different in different regions of the space.
+\item Assuming that $\epsilon L$ is kept roughly constant, the smaller $\epsilon$ is, the closest the discretized trajectory is to the continuous time one, but more computations are required.
 
-\item As a rule of thump, the optimal acceptance rate for HMC is around 65\% for high-dimensional problems (against the $\sim$ 23\% for high-dimensional RWMH we discussed before).
+\item The rejection rate of the algorithm is controlled mainly by $\epsilon$ (i.e., how good the discrete-time approximation is).  Values of $\epsilon$ that are too big might lead to unstable trajectories and very low acceptance rates, and the problem might not be obvious in pilot runs because the rejection rate might be very different in different regions of the space.
+
+\item As a rule of thump, the optimal acceptance rate for HMC is around 65\% for high-dimensional problems (against the $\sim$ 23\% for high-dimensional RWMH).
 \end{itemize}
 }
 
@@ -447,7 +433,7 @@ using a standard Gaussian distribution for the momentum variables.
 
 \item Note that under Gaussian momentum, performance of the algorithm is invariant to linear transformations $\mathbf{B} \theta$ if the momentum variables are multiplied by $\left( \mathbf{B}' \right)^{-1}$.  Hence, alternatively we leave the positions untransformed and use correlated Gaussian momentum variables.
 
-\item In any case, it is a good idea to use different scales for the each momentum variable if the position variables have very different variables.
+\item In any case, it is a good idea to use different scales for the each momentum variable if the position variables have very different variances.
 \end{itemize}
 }
 
@@ -458,11 +444,11 @@ using a standard Gaussian distribution for the momentum variables.
 
 \begin{itemize}
 
-\item Tuning HMC can be tricky, but the Stan software was developed for just this purpose. Stan uses its own language for specifying the statistical model.
+\item Tuning HMC algorithms can be tricky, but the Stan software was developed for just this purpose. Stan uses its own language for specifying the statistical model.
 
-\item \fix insert Stan GP example [CJP to do]
+\item \texttt{hmc-cox.R} provides a Stan implementation for a Cox survival analysis model. 
 
-\item NIMBLE doesn't provide HMC because we're just now implementing automatic differentation and because it's Stan's sweet spot.
+\item NIMBLE doesn't provide HMC because we're just now implementing automatic differentation and because it's Stan's sweet spot.  
 \end{itemize}
 
 }
@@ -481,7 +467,7 @@ using a standard Gaussian distribution for the momentum variables.
 \item A number of useful extensions, examples include
 \begin{itemize}
 \item Riemmanian HMC (non-constant $\mathbf{M}$).
-\item ``Splitting'' the potential.
+\item ``Splitting'' the Hamiltonian
 \item Partial momentum refreshment.
 \end{itemize}
 \end{itemize}

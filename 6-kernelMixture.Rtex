@@ -18,74 +18,6 @@
 
 
 
-\frame{
-\sffamily
-\frametitle{Mixtures of kernels}
-\begin{itemize}
-\item Let $K_1(\bftheta_{t-1} , \bftheta_{t} )$ and $K_2(\bftheta_{t-1} , \bftheta_{t} )$ be two transition kernels and assume that both $K_1$ and $K_2$ have the same stationary/limiting distribution $p(\bftheta)$.  %For example,  $K_1$ and $K_2$ could correspond to two MH algorithms based on different proposal distributions.
-
-\item It should be clear that the mixture kernel 
-$$
-K^{*}(\bftheta_{t-1} , \bftheta_{t} ) = \omega K_1(\bftheta_{t-1} , \bftheta_{t} ) + (1 - \omega) K_2(\bftheta_{t-1} , \bftheta_{t} )
-$$
-also has $p(\bftheta)$ as its stationary/limiting distribution.  For example, note that
-{\tiny \begin{multline*}
-\int K^{*}(\bftheta_{t-1} , \bftheta_{t} ) p(\bftheta_{t-1}) \dd \bftheta_{t-1} = \\
-%
-\int \left\{ \omega K_1(\bftheta_{t-1} , \bftheta_{t} ) + (1 - \omega) K_2(\bftheta_{t-1} , \bftheta_{t} ) \right\} p(\bftheta_{t-1}) \dd \bftheta_{t-1}= \\
-%
-\omega \int K_1(\bftheta_{t-1} , \bftheta_{t} ) p(\bftheta_{t-1}) \dd \bftheta_{t-1} + (1 - \omega) \int K_2(\bftheta_{t-1} , \bftheta_{t} ) p(\bftheta_{t-1}) \dd \bftheta_{t-1} =  p(\bftheta_{t})
-\end{multline*}}
-\item The previous observation suggests an algorithm that, at each iteration, chooses kernel 1 with probability $\omega$ and kernel 2 with probability $1-\omega$.
-
-\end{itemize}
-}
-
-
-
-
-
-
-\frame{
-\sffamily
-\frametitle{Mixtures of univariate kernels}
-\begin{itemize}
-
-\item Now, assume that we have a transition kernel $K_i\left(\theta^{(b)}_i, \theta^{(b+1)}_i\right)$ whose invariant distribution is 
-$$
-p(\theta_i \mid \theta_1, \ldots, \theta_{i-1}, \theta_{i+1}, \ldots, \theta_{p}).
-$$
-For example, you might design independent random-walk MH kernels on each dimension.
-
-\item Also, assume that $\bftheta^{(b)} \sim p(\bftheta)$.  Note that if we let 
-$$
-\bftheta^{(b+1)} = \left(\theta^{(b)}_1, \ldots, \theta_{i-1}^{(b)}, \theta^{(b+1)}_i, \theta^{(b)}_{i+1}, \ldots, \theta^{(b)}_{p} \right)
-$$
-where $\theta^{(b+1)}_{i} \mid \theta^{(b)}_{i} \sim K_i\left(\theta_i^{(b)}, \theta^{(b+1)}_i\right)$ we have $\bftheta^{(b+1)} \sim p(\bftheta)$
-
-\item Call the kernel we just described $\tilde{K}_i \left(\bftheta^{(b-1)}, \bftheta^{(b)} \right)$.  
-\end{itemize}
-}
-
-
-
-
-\frame{
-\sffamily
-\frametitle{Mixtures of univariate kernels}
-\begin{itemize}
-\item  To conclude, define a mixture of kernels
-$$
-K^{*}\left(\bftheta^{(b-1)}, \bftheta^{(b)} \right) = \sum_{i=1}^{p} \omega_i \tilde{K}_i \left(\bftheta^{(b-1)}, \bftheta^{(b)} \right)
-$$
-where $\omega_i > 0$ for all $i$ and $\sum_{i=1}^{p} \omega_i = 1$.  
-
-\item Because each kernel $\tilde{K}_i $ has $p(\bftheta)$ as its stationary distribution, and a mixture of kernels with a common stationary distribution shares that stationary distribution, a chain that uses $K^{*}$ converges to $p(\bftheta)$ as desired!
-\end{itemize}
-}
-
-
-
 
 
 \frame{
@@ -100,11 +32,11 @@ where $\omega_i > 0$ for all $i$ and $\sum_{i=1}^{p} \omega_i = 1$.
 
 \vspace{2mm}
 
-\item Although we motivated the algorithm using random sweeps, we can run through the kernels sequentially.  Justification is based on a composition of kernels rather than a mixture.  
+\item In addition to random sweeps, you can run through the kernels sequentially.  Justification is based on a composition of kernels rather than a mixture.  
 
 \vspace{2mm}
 
-\item In sequential sweeps not all kernels need to be used with the same frequency (just like not all the $\omega_i$s have to be equal).
+\item In sequential sweeps not all kernels need to be used with the same frequency (just like kernels do not have to be chosen with the same probability when doing random sweeps).
 
 \vspace{2mm}
 
@@ -149,7 +81,7 @@ $$
 %% end.rcode
 %% begin.rcode litters-default-mcmc, size='tiny'
 %% end.rcode
-While Gibbs sampling is often effective, when there is strong posterior dependence, it can have bad convergence and bad mixing. That's what we'll see here (next slide).
+While Gibbs sampling is often effective, when there is strong posterior dependence, it can have bad convergence and bad mixing.
 \end{itemize}
 
 }
@@ -161,7 +93,9 @@ While Gibbs sampling is often effective, when there is strong posterior dependen
 
 \begin{itemize}
 \item {\bf Example (litters GLMM):} Here are traceplots (see \texttt{gibbs-litters.R} for the code).
-\includegraphics[width=3in]{plots/gibbs-litters.pdf}
+\begin{center}
+\includegraphics[width=2.8in]{plots/gibbs-litters.pdf}
+\end{center}
 
 Despite knowing the exact conditional distributions for $p$, the poor mixing of the hyperparameters in the priors for $p$ produce bad mixing for $p$ values for the first group.
 \end{itemize}

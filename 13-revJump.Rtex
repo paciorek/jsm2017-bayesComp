@@ -3,60 +3,13 @@
 \sffamily
 \frametitle{Reversible Jump}
 \begin{itemize}
-\item The MCMC algorithms discussed so far have dealt with models where the number of unknown parameters is known in advance and fixed.
+\item In the case of the linear model we could integrate out the regression coefficients and work exclusively with the vector $\bfgamma$.  Hence, although the size of $\bftheta$ changes with $\bfgamma$, we did not really have to deal with the varying dimension.
 
-\item However, many practical situations involve uncertainty on the number of parameters, and we would like to extend the Metropolis-Hastings algorithm so that we can address model uncertainty.
+\item In the case of the generalized linear model, it is not obvious how we can integrate out the coefficients explicitly.  Hence, our algorithm needs to deal with the fact that the number of coefficients can change. 
 
-\item For this purpose we will discuss the reversible jump MCMC approach of \cite{Gr95} (see also \citealp{brooks2003efficient}).
+\item A slight generalization of Metropolis Hastings algorithms called reversible jump MCMC \citep{Gr95,brooks2003efficient} can be used in this context.
 \end{itemize}
 }
-
-
-
-\frame{
-\sffamily
-\frametitle{Reversible Jump}
-\begin{itemize}
-\item {\bf Example (piecewise constant functions): }  Consider a model of the form $y_i = f(x_i) + \epsilon_i$ for $i=1, \ldots, n$ where $\epsilon_i \sim \normal(0, \sigma^2)$ and
-$$
-f(x) = \begin{cases}
-\sum_{k=1}^{K} \beta_k \ind_{\left\{ \lambda_{k-1} \le x < \lambda_{k} \right\}}  &  x \in [0,1] \\
-0  & \mbox{otherwise .}
-\end{cases}
-$$
-Here $\bfbeta_K = (\beta_1, \ldots, \beta_K)$ and $\bflambda_K = (\lambda_1, \ldots, \lambda_{K-1})$ are unknown parameters that we are interested in estimating (note that we assume $\lambda_k < \lambda_{k+1}$ and  $\lambda_0 = 0$ and $\lambda_K = 1$).  
-
-\vspace{1mm}
-
-It is natural to assume that parameters are independent, that $\beta_k \sim \normal (\mu, \tau^2)$ for $k=1, \ldots, K$, and that $\bflambda_K$ is distributed as the order statistic of a sample of size $K-1$ from a uniform distribution on $[0,1]$
-
-%\sim \Uni\left( S_{K-1} \right)$ for $k=1,\ldots, K-1$.  (Can you tell where the last prior comes from?)
-\end{itemize}
-}
-
-\frame{
-\sffamily
-\frametitle{Reversible Jump}
-\begin{itemize}
-\item {\bf Example (piecewise constant functions, cont): } The formulation above is complete if $K$ is known, and a Metropolis-Hastings algorithm can be easily derived.  In particular, $\bfbeta_K \mid \cdots$ follows a $K$-variate normal distribution, while $\lambda_k \mid \cdots$ can be sampled using a random-walk Metropolis Hastings algorithm.
-
-\vspace{1mm}
-
-However, in most application we typically will not know how many ``steps'' are required to obtain a good fit to the data, so we would like to extend our algorithm to account for the uncertainty in $K$.  Note that, if we assume $K$ is unknown, we also need a prior on it.  A natural choice would be $K -1 \sim \Poi( \eta )$, where $\eta + 1$ represents the expected number of steps a priori.
-\end{itemize}
-}
-
-
-
-
-
-\frame{
-\sffamily
-\frametitle{Reversible Jump}
-{\bf Suggested exercise:  } Derive the MCMC algorithm for the piecewise constant regression model \textit{for fixed} $K$.  Make sure to propose an efficient algorithm by deriving the sampler for the $\lambda_k$s by first integrating over $\beta_1, \ldots, \beta_K$.
-}
-
-
 
 
 
@@ -69,7 +22,7 @@ However, in most application we typically will not know how many ``steps'' are r
 \begin{itemize}
 \item Let $K$ index the model of interest.  Associate with such model a prior $p(K)$.
 
-\item Each model $\mathcal{M}_K$ has a set of distinct set of parameters $\bftheta_K$.  The associated prior is $p(\bftheta_K \mid K)$ depends (explicitly or implicitly) on the dimension $K$.
+\item Each model $\mathcal{M}_K$ has a set of distinct set of parameters $\bftheta_K$.  The associated prior is $p(\bftheta_K \mid K)$ which depends (explicitly or implicitly) on the dimension $K$.
 
 \item The model $\mathcal{M}_K$ and the parameters $\bftheta_K$, data is generated according to a likelihood $p(\bfy \mid K, \bftheta_K)$.
 
@@ -89,7 +42,7 @@ $$
 \sffamily
 \frametitle{Reversible Jump}
 \begin{itemize}
-\item The main insight behind reversible jump algorithm is that you can transform the problem of computing $p(K \mid \bfy)$ into the problem of computing the posterior distribution of a discrete variable.
+\item To derive the algorithm:
 \begin{itemize}
 \item First, augment each vector $\bftheta_K$ with auxiliary variables $\bfu_K$, so that the dimension of $(\bftheta_K, \bfu_K)$ \textit{is the same} for all $K$.
 \item Second, define a (consistent) collection of deterministic transformations $T_{K,K'} \left\{ (\bftheta_K, \bfu_K), (\bftheta_{K'}, \bfu_{K'}) \right\}$ that map the augmented parameter spaces of different models (this is typically done by defining transformation only between ``neighboring'' models).
@@ -174,82 +127,30 @@ where $g_K(\bfu_K)$ is the density of the auxiliary variables and $d_{K, K'}$ is
 }
 
 
+
+
+
 \frame{
 \sffamily
 \frametitle{Reversible Jump}
+
 \begin{itemize}
-\item {\bf Example (piecewise constant functions, cont): }  Recall the non-linear regression model where $y_i = f(x_i) + \epsilon_i$ for $i=1, \ldots, n$ where $\epsilon_i \sim \normal(0, \sigma^2)$ and
-$$
-f(x) = \begin{cases}
-\sum_{k=1}^{K} \beta_k \ind_{\left\{ \lambda_{k-1} \le x < \lambda_{k} \right\}}  &  x \in [0,1] \\
-0  & \mbox{otherwise,}
-\end{cases}
-$$
-where $\beta_k \sim \normal (\mu, \tau^2)$ for $k=1, \ldots, K$ and $\bflambda_K$ is distributed as the order statistic of a sample of size $K-1$ from a uniform distribution on $[0,1]$.
+{\small
+\item {\bf Example (variable selection in a GLMM): } Reversible jump here is quite simple. At each iteration propose to add or remove the variable depending on whether it is currently in the model.
+
+The deterministic transformation between the full and reduced models is $ T_{0,1}{(\theta,u)} = (\theta, \beta_e)$, so $\beta_e^{(p)} = u^{(c)}$, where $\theta$ are the parameters always in the model, $\beta_e$ is the enforcement coefficient, and $u$ is the single auxiliary variable. 
+
+$d_{0,1} = d_{1,0} = 1$ and the Jacobian is one, so the proposals involve:
+
+\begin{itemize}
+\item Addition: propose $\beta_e^{(p)} = u^{(c)}$ from $u^{(c)} ~ g_0(u)$ with term $1/g_0(u^{(c)})$ in the acceptance ratio
+\item Removal:  propose removal ($u^{(p)}=\beta_e^{(c)}$)  with term $g_0(\beta_e^{(c)})$ in the acceptance ratio
 \end{itemize}
+
+Note that auxiliary variable density $g_0(u)$ plays the role of a constant proposal distribution for $\beta_e$ so should be well-chosen.
+
+See \texttt{rj-childSupport.R} for the implementation using a user-defined sampler in NIMBLE.
 }
-
-
-
-\frame{
-\sffamily
-\frametitle{Reversible Jump}
-\begin{itemize}
-\item {\bf Example (piecewise constant functions, cont): }  Before deriving the RJMCMC algorithm, note that (given $\bflambda_{K}$) the vector of coefficients $\bfbeta_K$ can be integrated out of the model.  Denote the corresponding integrated likelihood by $p(\bfy \mid K, \bflambda_K)$.
-
-\vspace{1mm}
-
-Working with this integrated likelihood rather than the original is important because it reducers the size the auxiliary space $\bfu_K$ and the complexity of $T_{K,K'}$.  Intuitively, when we propose to add a new step we only need to propose where it is located, but not its height!
-\end{itemize}
-}
-
-
-
-
-\frame{
-\sffamily
-\frametitle{Reversible Jump}
-\begin{itemize}
-\item {\bf Example (piecewise constant functions, cont): }  It is customary to only allow moves that increase or decrease the number of components by at most one (note that the chain is still positive recurrent).  In that case, you could set $d_{K, K+1} = d_{K, K-1} = 1/2$ for all $K>1$ and $d_{1,2} = 1$.
-\end{itemize}
-}
-
-
-
-
-\frame{
-\sffamily
-\frametitle{Reversible Jump}
-\begin{itemize}
-\item {\bf Example (piecewise constant functions, cont): }  You need to design two (coupled) moves (think of them as joining two segments and splitting a segment).
-
-\vspace{1mm}
-
-If you propose a reduction in the number of components, then the pair of adjacent components to be joint are chosen uniformly at random.
-
-\vspace{1mm}
-
-On the other hand, if you propose to increase the number of parameters by one then the component to be split is chosen (call it $l$) is chosen uniformly at random, and the position of the split is chosen uniformly at random between $\lambda_{l-1}$ and $\lambda_l$.
-\end{itemize}
-}
-
-
-
-\frame{
-\sffamily
-\frametitle{Reversible Jump}
-\begin{itemize}
-\item {\bf Example (piecewise constant functions, cont): } With these moves we only need to be concerned about a single $u_{K}$ which is used to select the location of the split (the terms associated with all other entries of $\bfu$ cancel out in the acceptance probability).  
-
-\vspace{1mm}
-
-Therefore, we set $u_{K+1} \sim \Uni[0,1]$ and 
-$$
-T_l(\bflambda_K, u_{K}) = (\lambda_1, \ldots, \lambda_{l-1}, u\lambda_{l} + \{1-u\}\lambda_{l-1} , \lambda_{l}, \ldots, \lambda_{K})
-$$
-(note that the resulting vector has length $K+1$ as desired).  The Jacobian of this transformation is simply $\lambda_l - \lambda_{l-1}$.
-
-We can now just plug-in these expressions in the general formulation to get the algorithm for this problem!
 \end{itemize}
 }
 
@@ -257,28 +158,7 @@ We can now just plug-in these expressions in the general formulation to get the 
 
 
 
-\frame{
-\sffamily
-\frametitle{Reversible Jump}
-{\bf Suggested exercise:  } Complete the derivation the MCMC algorithm for the piecewise constant regression model \textit{for unknown} $K$.
-}
 
 
 
-\frame{
-\sffamily
-\frametitle{Reversible Jump}
-\begin{center}
-\alert{Peter M\"uller's words:   You need a driver's license to implement a RJMCMC.}
-\end{center}
-}
 
-\frame{
-\sffamily
-\frametitle{Reversible Jump}
-
-\fix insert basic RJ for variable selection based on Perry's example; particularly if we do Gelman-Hill child support example for probit Albert-Chib, that would be a good one to do here
-
-\fix also decide if we should change Abel's piecewise constant example to be the simpler variable selection example; I like the added richness of the piecewise constant so I think I'd suggest we keep that
-
-}

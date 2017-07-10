@@ -133,25 +133,19 @@
 
 % knitr's syntax for \input when one has child docs with R chunks is a bit clunky...
 
-\begin{frame}
+\frame{
 \sffamily
-\frametitle{Partial to-do list}
-{\footnotesize
+\frametitle{Learning objectives}
 \begin{itemize}
-\item Cox example in MCMC?
-\item CAR example in MCMC?
-\item additional data augmentation example with probit or robust?
-\item look at integration of Abel/Chris materials in slice, adaptive, other?
-\item GP example for HMC in Stan
-\item work on variable selection material and add Nimble example (Chris has nimbleFunction code ready from Perry's example -- either use Perry's simulated data example or use on Gelman-Hill child support dataset)
-\item replace SMC examples with NIMBLE code [will ask Nick to work on this - Abel's models are very similar to those in Nick's JSS submission]
-\item revisit GP example with VB in Stan?
-\item discuss ordering of topics - Chris moved around some but not sure current ordering is ideal
-\item learning objectives
+\item Understand the landscape of current computational methods for
+Bayesian inference; 
+\item Understand the statistical and probabilistic principles behind the methods;
+\item Understand the various MCMC alternatives and how to assess MCMC performance;
+\item Be able to choose a method and software tool for a real-world problem; and
+\item Be able to implement Bayesian inference using NIMBLE and Stan.
 \end{itemize}
 }
 
-\end{frame}
 
 %% begin.rcode child='1-bayesIntro.Rtex'
 %% end.rcode
@@ -174,13 +168,10 @@
 %% begin.rcode child='7-mcmcStrategies.Rtex'
 %% end.rcode
 
-%% begin.rcode child='8-adaptive.Rtex'
+%% begin.rcode child='8-auxiliary.Rtex'
 %% end.rcode
 
-%% begin.rcode child='9-auxiliary.Rtex'
-%% end.rcode
-
-%% begin.rcode child='10-slice.Rtex'
+%% begin.rcode child='9-adaptive.Rtex'
 %% end.rcode
 
 %% begin.rcode child='11-hmc.Rtex'
@@ -190,9 +181,6 @@
 %% end.rcode
 
 %% begin.rcode child='13-revJump.Rtex'
-%% end.rcode
-
-%% begin.rcode child='14-normConstants.Rtex'
 %% end.rcode
 
 %% begin.rcode child='15-impSample.Rtex'
@@ -207,7 +195,20 @@
 %% begin.rcode child='18-laplace.Rtex'
 %% end.rcode
 
-\section{References}
+\frame{
+\sffamily
+\frametitle{Learning objectives}
+\begin{itemize}
+\item Understand the landscape of current computational methods for
+Bayesian inference; 
+\item Understand the statistical and probabilistic principles behind the methods;
+\item Understand the various MCMC alternatives and how to assess MCMC performance;
+\item Be able to choose a method and software tool for a real-world problem; and
+\item Be able to implement Bayesian inference using NIMBLE and Stan.
+\end{itemize}
+}
+
+%\section{References}
 
 {\tiny
 \bibliographystyle{bka}

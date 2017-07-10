@@ -1,0 +1,134 @@
+
+
+\frame{
+\sffamily
+\frametitle{Adaptive MCMC algorithms}
+\begin{itemize}
+\item  As our Metropolis examples illustrate, one of the main challenges associated with designing MH  algorithms is selecting the proposal distribution.
+
+\item In particular, concentrate on (Gaussian) random-walk MH algorithms, where the problem is how to select the variance-covariance matrix.  What we have done so far requires a lot of back and forth!
+
+\item Is there a way in which we can create a ``self-tuning'' algorithm?  This is the main thrust behind \alert{adaptive MCMC algorithms}!!!
+\end{itemize}
+}
+
+
+
+\frame{
+\sffamily
+\frametitle{Adaptive MCMC algorithms}
+\begin{itemize}
+\item A simple yet powerful idea (at least for elliptical posteriors):  start with a potentially very bad covariance matrix and, after the algorithm has been running for a while, switch to different proposal that uses the previous values of the chain to estimate $\Cov( \bftheta \mid \bfy)$ (just as we did when we manually tuned the chain).
+
+\item This is particularly useful when $\dim\{ \bftheta \} = d$ is large!
+
+\item  The main conceptual issue with this approach is that using the whole history of the chain to create a proposal means that we are not working with a Markov chain anymore (or, at least, not with a time-homogenous one), so the theory we discussed so far cannot be used to ensure that the algorithm actually converges to the desired equilibrium distribution.
+\end{itemize}
+}
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Adaptive MCMC algorithms}
+\begin{itemize}
+\item {\bf Example (taken from \citealp{RoRo:09} and \citealp{haario2001adaptive}):  }  Consider a target distribution $\normal(\mathbf{0}, \bfM \bfM^T)$ where the entries of $\bfM$ have been randomly generated from standard normal distribution.
+
+\vspace{1mm}
+
+We consider the case $d=\dim\{ \bftheta \} = 10$.  For the first $20,000$ iterations, the proposal distribution is fixed and corresponds to a normal distribution, $q(\vartheta \mid \theta) = \normal\left( \vartheta \mid \theta, \frac{0.1^2}{d} \mathbf{I} \right)$.  After that point, the proposal becomes a mixture
+$$
+q(\vartheta \mid \theta) = (1- \beta) \normal \left(\vartheta \mid \theta, \frac{2.38^2}{d} \bfSigma_b \right) + \beta \normal\left(\vartheta \mid \theta, \frac{0.1^2}{d} \mathbf{I} \right)
+$$
+where $\bfSigma_b$ is the current empirical estimate of the covariance of the target distribution (computed on the basis of the previous $b-1$ iterations of the chain), and $\beta > 0$ is a (small) constant.
+\end{itemize}
+}
+
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Adaptive MCMC algorithms}
+\begin{itemize}
+\item {\bf Example (taken from \citealp{RoRo:09} and \citealp{haario2001adaptive}, cont):  }  The algorithm is implemented in the file \texttt{adaptive1.R}, which allows you to run the algorithm using only the ``default'', only the ``optimal'', and the adaptive proposal.  The graphs below show the trace plots for the first component of $\bftheta$. 
+
+\includegraphics[height=3.3cm,angle=0]{plots/adap_trace_def.pdf}
+\includegraphics[height=3.3cm,angle=0]{plots/adap_trace_opt.pdf}
+\includegraphics[height=3.3cm,angle=0]{plots/adap_trace_adp.pdf}
+
+
+\end{itemize}
+}
+
+
+
+
+\frame{
+\sffamily
+\frametitle{Adaptive MCMC algorithms}
+\begin{itemize}
+\item {\bf Example (taken from \citealp{RoRo:09} and \citealp{haario2001adaptive}, cont):  }    The graphs below show the acf functions for the first component of $\bftheta$.
+
+\includegraphics[height=3.3cm,angle=0]{plots/adap_acf_def.pdf}
+\includegraphics[height=3.3cm,angle=0]{plots/adap_acf_opt.pdf}
+\includegraphics[height=3.3cm,angle=0]{plots/adap_acf_adp.pdf} \\
+
+
+Acceptance rates are 0.964, 0.264, and 0.260.  The effective sample sizes in the last two cases are 3096 and 3200.
+\end{itemize}
+}
+
+
+
+\frame{
+\sffamily
+\frametitle{Adaptive MCMC algorithms}
+\begin{itemize}
+\item {\bf Example (taken from \citealp{RoRo:09} and \citealp{haario2001adaptive}, cont):  }  
+
+Some things to consider:
+\begin{itemize}
+\item The use of $20,000$ ``preliminary'' samples and a ``default'' variance $ \frac{0.1^2}{d} \mathbf{I}$ are totally ad-hoc.
+
+\item More recent schemes (including that in NIMBLE) adapt on the fly (e.g., every 100 iterations), averaging the current proposal covariance with the estimated posterior covariance from recent iterations.
+
+\item Adaptive univariate schemes simply adjust the proposal scale.
+
+\end{itemize}
+\end{itemize}
+}
+
+\frame{
+\sffamily
+\frametitle{Adaptive MCMC algorithms}
+
+NIMBLE's adaptive MCMC
+\begin{itemize}
+\item NIMBLE's default scalar and block Metropolis samplers use adaptation. 
+\item Users can set the initial proposal scale / covariance.
+\item Current scheme can sometimes perform very poorly when the scales of initial proposal covariance and the posterior covariance are very different.
+\begin{itemize}
+\item We plan to roll out a fix for this in the next release.
+\end{itemize}
+\end{itemize}
+}
+
+\begin{frame}[fragile]
+\sffamily
+\frametitle{Adaptive MCMC algorithms}
+
+\begin{itemize}
+\item {\bf Example (Nonlinear binomial regression):} in \texttt{mh-bliss.R} we have NIMBLE code for non-adaptive (theoretical proposal covariance) and adaptive blocked and univariate Metropolis sampling. 
+\begin{center}
+\includegraphics[width=3.0in]{plots/adaptive-bliss}
+\end{center}
+\end{itemize}
+
+\end{frame}
+
+
+
+

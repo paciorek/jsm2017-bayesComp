@@ -4,18 +4,20 @@
 
 \frame{
 \sffamily
-\frametitle{Markov chain Monte Carlo Methods}
+\frametitle{Why simulation based methods:  A motivating example}
 \begin{itemize}
-\item Motivation
-\item Brief review of Markov chain theory
-\item Metropolis Hastings algorithms.
-\item Diagnostics.
-\item Gibbs sampling.
-\item General design rules.
-\item Adaptive MCMC.
-\item Slice samplers.
-\item Hamiltonian MCMC.
-\item Reversible Jump MCMC.
+\item  To illustrate the power of simulation methods, consider the problem of estimating the diagnostic power of a medical test, defined as the probability of a positive result in the test for a diseased individual.
+$$
+\eta = \Pr\left( D \mid T \right) .
+$$
+
+\item $\eta$ is not directly observable.  However, we can easily obtain data on the prevalence $\theta$, the false positive rate $\alpha$ and the false negative rate $\beta$,
+\begin{align*}
+\theta &= \Pr(D) , &
+\alpha & = \Pr \left( T \mid \bar{D} \right)  , &
+\beta & = \Pr \left( \bar{T} \mid D \right) ,
+\end{align*}
+by sampling individuals from the general population, the population of healthy individuals, and the population of diseased individuals, respectively.
 \end{itemize}
 }
 
@@ -24,17 +26,144 @@
 
 \frame{
 \sffamily
+\frametitle{A motivating example}
+\begin{itemize}
+\item Note that $\eta$ is related to $\theta$, $\alpha$ and $\beta$ by the formula:
+$$
+\eta(\theta, \alpha, \beta) = \frac{(1-\beta) \theta}{(1-\beta) \theta + \alpha (1-\theta)}  .
+$$
+(This is just Bayes theorem!)
+
+\item {\bf Statistical model: } Assuming that individuals are sampled at random from the corresponding populations 
+\begin{align*}
+x_1 &= \left\{ \mbox{\parbox[c][][c]{6cm}{\# of diseased individuals in a sample of size $n_1$ of the general population}} \right\}  \sim \Bin(n_1, \theta)  , \\
+x_2 &= \left\{\mbox{\parbox[c][][c]{6cm}{\# of positive individuals in a sample of size $n_2$ of healthy individuals}}\right\} \sim \Bin(n_2, \alpha) , \\
+x_3 &= \left\{\mbox{\parbox[c][][c]{6cm}{\# of positive individuals in a sample of size $n_3$ of diseased individuals}}\right\} \sim \Bin(n_3, 1-\beta)  .
+\end{align*}
+
+\end{itemize}
+}
+
+
+
+\frame{
+\sffamily
+\frametitle{A motivating example}
+\begin{itemize}
+\item A frequentist approach:
+\begin{itemize}
+\item {\bf Point estimation:  }  The MLEs for $\theta$, $\alpha$ and $\beta$ are
+\begin{align*}
+\hat{\theta} &= \frac{x_1}{n_1} ,   &  \hat{\alpha} &= \frac{x_2}{n_2} ,   &  \hat{\beta} &= 1 - \frac{x_3}{n_3} .
+\end{align*}
+Hence, the MLE of $\eta$ is simply $\hat{\eta} = \frac{(1-\hat{\beta}) \hat{\theta}}{(1-\hat{\beta}) \hat{\theta} + \hat{\alpha} (1-\hat{\theta})}$.
+\vspace{1mm}
+\item {\bf Interval estimation:  }  Finding a pivot for $\eta$ is hard.  However, an asymptotic approximate interval can be constructed using the Delta method
+\begin{align*}
+\Var(\hat{\eta}) \approx  
+%
+\left[ \left. \nabla \eta(\theta,\alpha,\beta) \right|_{(\hat{\theta},\hat{\alpha},\hat{\beta})} \right]^T 
+\bfSigma \left[ \left. \nabla \eta(\theta,\alpha,\beta) \right|_{(\hat{\theta},\hat{\alpha},\hat{\beta})} \right]
+\end{align*}
+where $\bfSigma = \diag\left\{ \Var(\hat{\theta}), \Var(\hat{\alpha}), \Var(\hat{\beta})  \right\}$.
+
+\vspace{2mm}
+
+For small samples, parametric bootstrap could be used (which is a simulation-based computational tool common in frequentist statistics).
+\end{itemize}
+\end{itemize}
+}
+
+
+
+\frame{
+\sffamily
+\frametitle{A motivating example}
+\begin{itemize}
+\item A frequentist approach (cont):
+\begin{itemize}
+\item {\bf Interval estimation (cont):  }  Parametric bootstrap:  Once $\hat{\theta}$,$\hat{\alpha}$ and $\hat{\beta}$ have been computed, repeat the following steps for $b=1,\ldots,B$ where $B$ is ``large'':
+\begin{enumerate}
+\item Sample imaginary samples $x_1^{(b)} \sim \Bin(n_1, \hat{\theta})$, $x_2^{(b)} \sim \Bin(n_2, \hat{\alpha})$ and $x_3^{(b)} \sim \Bin(n_3, 1 - \hat{\beta})$.
+
+\item Compute $\tilde{\theta}^{(b)} = \frac{x_1^{(b)}}{n_1}$, $\tilde{\alpha}^{(b)} = \frac{x_2^{(b)}}{n_2}$ and $\tilde{\beta}^{(b)} = 1-\frac{x_3^{(b)}}{n_3}$ and let $\tilde{\eta}^{(b)} = \frac{(1-\tilde{\beta}^{(b)}) \tilde{\theta}^{(b)}}{(1-\tilde{\beta}^{(b)}) \tilde{\theta}^{(b)} + \tilde{\alpha}^{(b)} (1-\tilde{\theta}^{(b)})}$.
+\end{enumerate}
+
+\vspace{2mm}
+
+Then, an $\epsilon$-coverage confidence interval for $\eta$ is obtained by computing the $\epsilon/2$ and $1-\epsilon/2$ quantiles of the sample $\tilde{\beta}^{(1)} , \ldots, \tilde{\beta}^{(B)}$.
+\end{itemize}
+\end{itemize}
+}
+
+
+
+\frame{
+\sffamily
+\frametitle{A motivating example}
+\begin{itemize}
+\item A Bayesian approach:
+\begin{itemize}
+\item {\bf Priors:  }  Natural non-informative priors for this problem are $\theta \sim \bet\left( \frac{1}{2} , \frac{1}{2}\right)$, $\alpha \sim \bet\left( \frac{1}{2} , \frac{1}{2}\right)$ and $\beta \sim \bet\left( \frac{1}{2} , \frac{1}{2}\right)$.
+
+\vspace{2mm}
+
+\item {\bf Posteriors:  }  Because of independence and conjugacy we have 
+{\scriptsize \begin{multline*}
+p(\theta, \alpha, \beta \mid x_1, x_2, x_3) = \bet \left( \theta \mid \frac{1}{2} + x_1 , \frac{1}{2} + n_1 - x_1 \right) \\
+%
+\bet \left( \alpha \mid \frac{1}{2} + x_2 , \frac{1}{2} + n_2 - x_2 \right) 
+%
+\bet \left( \beta \mid \frac{1}{2} + n_3 - x_3 , \frac{1}{2} + x_3 \right)
+\end{multline*}}
+Since $\eta$ is a function of $(\theta,\alpha,\beta)$, its posterior can be obtained through transformations.  However, in this case, this is extremely messy ... Try it yourself.
+\end{itemize}
+\end{itemize}
+}
+
+
+
+\frame{
+\sffamily
+\frametitle{A motivating example}
+\begin{itemize}
+\item A Bayesian approach:
+\begin{itemize}
+\item {\bf Using a simulation-based approach:  }    Instead of trying to find a closed-form expression for $p(\eta \mid x_1, x_2, x_3)$, sample!
+
+\begin{enumerate}
+\item For $b=1,\ldots,B$ generate $\theta^{(b)} \sim \bet \left( \frac{1}{2} + x_1 , \frac{1}{2} + n_1 - x_1 \right)$, $\alpha^{(b)} \sim \bet \left( \frac{1}{2} + x_2 , \frac{1}{2} + n_2 - x_2 \right)$ and $\beta^{(b)} \sim \bet \left( \frac{1}{2} + n_3 - x_3 , \frac{1}{2} + x_3 \right)$.
+
+\item For $b=1,\ldots,B$ let $\eta^{(b)} = \frac{(1-\beta^{(b)}) \theta^{(b)}}{(1-\beta^{(b)}) \theta^{(b)} + \alpha^{(b)} (1-\theta^{(b)})}$.
+\end{enumerate}
+
+\item Density $\Rightarrow$ histogram or a kernel density estimator.
+
+\item Posterior mean or median $\Rightarrow$ Empirical ean or median.
+
+\item An $\epsilon$-probability credible interval $\Rightarrow$ $\epsilon/2$ and $1-\epsilon/2$ quantiles of $\eta^{(1)}, \ldots, \eta^{(B)}$.
+\end{itemize}
+\end{itemize}
+\begin{center}
+Let's run the scripts in the file \texttt{simulationmotivation.R}.
+\end{center}
+}
+
+
+
+\frame{
+\sffamily
 \frametitle{Motivation for MCMC algorithms}
 \begin{itemize}
-\item Generally speaking, the direct sampling algorithms discussed before do not scale well as the number of parameters grow.
+\item Direct sampling like in the previous example is not feasible for many models of interest, particularly those involving large numbers of parameters.
 
-\item In \textit{optimization} problems, this ``curse of dimensionality'' is dealt with by using conjugate gradient algorithms.
+\item In \textit{optimization} problems, this ``curse of dimensionality'' is dealt with by using conditional gradient algorithms.
 \end{itemize}
 \vspace{-8mm}
 \begin{center}
 \begin{tabular}{lr}
 \begin{minipage}{5.2cm}
-Conjugate gradient is an iterative algorithm that repeatedly optimizes along one single dimension while keeping the value of the rest fixed.
+Conditional gradient algorithms repeatedly optimizes along one single dimension while keeping the value of the rest fixed.
 \end{minipage}
 &
 \begin{minipage}{5.2cm}
@@ -61,7 +190,7 @@ p(\theta, \sigma^2 \mid y_1, \ldots, y_n) \propto \left(\frac{1}{\sigma^2}\right
 %
 \exp\left\{ -\frac{n\theta^2 - 2n\theta \bar{y} + \sum_{i=1}^{n} y_i^2 + 2c}{2\sigma^2} - \frac{\theta^2 - 2\theta\mu + \mu^2}{2\tau^2}   \right\} .
 \end{multline*}
-This posterior is intractable (by which I mean, computing means/variances and cumulative probabilities of events is difficult).
+This posterior is intractable (by which I mean, computing means/variances and cumulative probabilities is difficult).
 
 \end{itemize}
 }
@@ -100,7 +229,7 @@ See the file \texttt{simpleconjugategradient.R}.
 \sffamily
 \frametitle{Motivation for MCMC algorithms}
 \begin{itemize}
-\item Conjugate gradient only gives us a point estimator and does not allow for full exploration of the posterior distribution (e.g., to compute credible intervals).  
+\item Iterative conditional modes only gives us a point estimator and does not allow for full exploration of the posterior distribution (e.g., to compute credible intervals).  
 
 \item What would be an equivalent idea for \textit{sampling} from a distribution $p(\bftheta)$ with $\bftheta = (\theta_1, \ldots, \theta_p)$?
 \begin{itemize}
@@ -184,12 +313,12 @@ An example of this implementation in R is available in the file \texttt{simpleGi
 \item A couple of things to keep in mind:
 
 \begin{itemize}
-\item Unlike conjugate gradient, we care about all numbers generated by the sampler, not only about the last one (we are trying to explore the whole distribution, not just find where the mean/median/mode is).
-
-\vspace{2mm}
+\item Unlike iterative conditional modes, we care about all numbers generated by the sampler, not only about the last one (we are trying to explore the whole distribution, not just find where the mean/median/mode is).
 
 \item Note that when the initial values are too far from where most of the mass of the posterior is located (as in the second set of initial values), the first few samples are clearly wrong and can seriously bias the results. Hence they need to be discarded.
 \end{itemize}
+
+\item Because in the Gibbs sampler we are dealing with a distribution, we need to think about convergence in the probabilistic sense (almost surely/distribution/probability) rather than in terms of convergence in the sense we talk in analysis.
 \end{itemize}
 }
 
@@ -199,24 +328,10 @@ An example of this implementation in R is available in the file \texttt{simpleGi
 \sffamily
 \frametitle{Motivation for MCMC algorithms}
 \begin{itemize}
-\item Because in the Gibbs sampler we are dealing with a distribution, we need to think about converge in the probabilistic sense (e.g., convergence in probability or convergence in distribution) rather than in terms of  convergence in the sense we talk in analysis.
-
-\vspace{2mm}
-
 \item Because the value of each pair $\left(\theta^{(b)}, \sigma^{2(b)}\right)$ depends on the value of $\left(\theta^{(b-1)}, \sigma^{2(b-1)}\right)$ (but NOT on $\left(\theta^{(b-2)}, \sigma^{2(b-2)}\right) , \ldots , \left(\theta^{(1)}, \sigma^{2(1)}\right)$) we are actually dealing with a Markov chain!
-\end{itemize}
-}
 
-
-
-\frame{
-\sffamily
-\frametitle{Motivation for MCMC algorithms}
-\begin{itemize}
 \item The Gibbs sampler is but one example of a class of algorithms that attempt to construct Markov chains whose limiting distributions correspond to the posterior distribution of interest, and then iterate the 
 chain to generate (dependent) samples that can be used to approximate any integral of interest.  Hence the name of Markov chain Monte Carlo methods!
-
-\vspace{2mm}
 
 \item For a history of MCMC algorithms, see \cite{robert2011short}.
 \end{itemize}
@@ -275,25 +390,8 @@ $$
 \frame{
 \sffamily
 \frametitle{A brief review of Markov chains}
-\begin{itemize}
-\item For now we will focus on countable spaces, so we will be working with transition matrices.  The results and insights for continuous spaces are similar, but the theory is (logically) more involved.
 
-\vspace{1mm}
-
-\item Besides providing some intuition without a lot of mathematical complexity, problems with discrete sampling spaces can be of interest in their own right!
-\begin{itemize}
-\item You might think that countable spaces are just a toy example and are not really relevant for practical applications.  However, you would be wrong!
-\end{itemize}
-\end{itemize}
-}
-
-
-
-\frame{
-\sffamily
-\frametitle{A brief review of Markov chains}
-
-Back to our review of (time homogeneous, discrete state-space) Markov chains ...
+For simplicity we present the main concepts in the context of countable state spaces.
 
 \begin{itemize}
 \item Assuming that $\Omega$ contains exactly $K$ points, the state of a chain at time $t$ can be represented by a probability vector $\bfpi_t = (\pi_{t,1}, \ldots, \pi_{t,K})^T$.
@@ -345,12 +443,13 @@ f_{ii}^{t} &= \Pr(T_i = t) ,   &   T_i = \inf \left\{ t \ge 1 : X_t=i \mid X_0 =
 \begin{itemize}
 \item A state $i$ has period $k$ if any return to state $i$ must occur in multiples of $k$ time steps, i.e., $k=\mbox{gcd} \left\{ n : \Pr(X_n=i \mid X_0=i) > 0 \right\}$
 \item A state with period $k=1$ is called aperiodic.
-\item An aperiodic chain has all its states being aperiodic.
+\item \alert{An aperiodic chain has all its states being aperiodic (additional requirement compared to the stationary distribution).}
 \end{itemize}
 
-\item If a chain has a limiting distribution then it is equal to the unique stationary distribution!
+\item If a chain has a limiting distribution then it is equal to the unique stationary distribution! 
 \end{itemize}
 }
+
 
 
 
@@ -359,38 +458,7 @@ f_{ii}^{t} &= \Pr(T_i = t) ,   &   T_i = \inf \left\{ t \ge 1 : X_t=i \mid X_0 =
 \sffamily
 \frametitle{A brief review of Markov chains}
 \begin{itemize}
-\item {\bf Example:}  The chain with transition matrix 
-$$
-\left( \begin{matrix}
-0 & 1 \\
-1 & 0 
-\end{matrix}
-\right)
-$$
-is irreducible and all of its states are positive recurrent, but it is periodic (with period 2).  Accordingly, note that $\tilde{\bfpi} = (1/2, 1/2)^T$ is the unique stationary distribution for this chain, but it does not have an equilibrium distribution because
-$$
-(\pi_0 , 1 - \pi_0) 
-\left( \begin{matrix}
-0 & 1 \\
-1 & 0 
-\end{matrix}
-\right)^{n}
-= \begin{cases}
-(\pi_0 , 1 - \pi_0) & n \mbox{ even} \\
-(1 - \pi_0 , \pi_0) & n \mbox{ odd} 
-\end{cases} ,
-$$
-so the limit as $n \to \infty$ does not exist.
-\end{itemize}
-}
-
-
-
-\frame{
-\sffamily
-\frametitle{A brief review of Markov chains}
-\begin{itemize}
-\item The previous discussion should hint at what we want to do.  If we can construct a Markov chain that has a unique stationary/limiting distribution that is identical to the one we are interested in (in our case, the posterior distribution), then we can generate samples from the posterior by using the following approach:
+\item If we can construct a Markov chain that has a unique stationary/limiting distribution that is identical to the one we are interested in (in our case, the posterior distribution), then we can generate samples from the posterior by using the following approach:
 \begin{itemize}
 \item Pick an initial state from the chain $x_0$ according to some distribution (often the prior).
 
@@ -426,184 +494,6 @@ so the limit as $n \to \infty$ does not exist.
 
 
 
-\frame{
-\sffamily
-\frametitle{A brief review of Markov chains}
-\begin{itemize}
-\item How fast do we converge to $\hat{\bfpi}$? Assume that a Markov chain is irreducible, aperiodic and positive recurrent.  Also, assume that $\bfP$ is diagonalizable (a slightly more convoluted argument can be made when $\bfP$ is not diagonalizable, but I want to keep it simple here).
-
-\item In this case we can study the rate of convergence toward that limiting distribution by using the spectral decomposition of $\bfP$,
-$$
-\bfP = \bfD \bfLambda \bfD^{-1} = \sum_{k=1}^{K} \lambda_k \bfu_i \bfv_i^{T}
-$$
-where $\bfLambda$ is a diagonal matrix containing the eigenvalues of $\bfP$, $\bfD$ correspond to the eigenvectors of $\bfP$, $\bfu_i^T$ is the $i$-th row of $\bfD$ and $\bfv_i^T$ is the $i$-th row of $\bfD^{-1}$.
-
-\end{itemize}
-}
-
-
-
-\frame{
-\sffamily
-\frametitle{A brief review of Markov chains}
-\begin{itemize}
-\item Without loss of generality, we assume that the eigenvalues are ordered so that $|\lambda_1| > |\lambda_2| > \ldots > |\lambda_K|$.
-
-\item Because $\bfP$ is row-stochastic its largest eigenvalue is 1, i.e., $\lambda_1 = 1$.  Also, because we know that the stationary distribution is unique, the multiplicity of this eigenvalue has to be one.  Hence the remaining eigenvalues satisfy $|\lambda_k| < 1$ for all $k \ge 2$ and therefore $\lim_{n \to \infty} \lambda_k^n \to 0$ for $k \ge 2$
-\end{itemize}
-}
-
-
-
-\frame{
-\sffamily
-\frametitle{A brief review of Markov chains}
-\begin{itemize}
-\item Now, note that 
-$$
-\bfP^n = \bfD \bfLambda^{n} \bfD^{-1}= \sum_{k=1}^{K} \lambda_k^{n} \bfu_i \bfv_i^{T} =  \bfu_1 \bfv_1^{T} + \sum_{k=2}^{K} \lambda_k^{n} \bfu_i \bfv_i^{T}
-$$
-
-\item Hence $\lim_{n \to \infty} \bfP^{n} = \bfu_1 \bfv_1^{T}$ and the rows of $\bfu_1 \bfv_1^{T}$ are all identical and correspond to the stationary/limiting distribution.
-
-\item Also, the rate of convergence is dominated by $|\lambda_2|$, the second largest eigenvalue (in absolute value).
-\end{itemize}
-}
-
-
-
-\frame{
-\sffamily
-\frametitle{A brief review of Markov chains}
-\begin{center}
-\alert{We care about the rate of convergence because there are many chains with the same stationary/limiting distribution, and the rate of convergence potentially allows us to select among them.}
-\end{center}
-}
-
-
-
-\frame{
-\sffamily
-\frametitle{A brief review of Markov chains}
-\begin{itemize}
-\item {\bf Example:  }  Consider constructing the family of two-states Markov chains with transition distribution
-$$
-\bfP = \left(\begin{matrix}
-1-\alpha  &  \alpha \\
-\beta  &  1 - \beta
-\end{matrix}\right)
-$$  
-It is easy to verify that the stationary distribution of this chain is $\left( \frac{\beta}{\alpha + \beta} , \frac{\alpha}{\alpha + \beta} \right)$.  Hence, all two-state chains with $\alpha = \beta$ have stationary distribution $\left( \frac{1}{2}, \frac{1}{2} \right)$.  How fast do they converge to the limiting distribution?
-\end{itemize}
-}
-
-
-
-\frame{
-\sffamily
-\frametitle{A brief review of Markov chains}
-\begin{itemize}
-\item {\bf Example (cont):  }  The spectral decomposition of the transition matrix in this case is
-$$
-\bfP = \left(\begin{matrix}
-\frac{1}{2}  &  \frac{1}{2} \\
-\frac{1}{2}  &  \frac{1}{2}
-\end{matrix}\right) + 
-%
-(1 - 2\alpha)
-%
-\left(\begin{matrix}
-\frac{1}{2}  &  -\frac{1}{2} \\
--\frac{1}{2}  &  \frac{1}{2}
-\end{matrix}\right)
-$$
-so that 
-$$
-\bfP^{n} = \left(\begin{matrix}
-\frac{1}{2}  &  \frac{1}{2} \\
-\frac{1}{2}  &  \frac{1}{2}
-\end{matrix}\right) + 
-%
-(1 - 2\alpha)^{n}
-%
-\left(\begin{matrix}
-\frac{1}{2}  &  -\frac{1}{2} \\
--\frac{1}{2}  &  \frac{1}{2}
-\end{matrix}\right)
-$$
-when $\alpha = 1/2$ we have $\bfP^n = \bfP$ as expected (when $\alpha = 1/2$ we have an independent sampler).
-\end{itemize}
-}
-
-
-
-
-\frame{
-\sffamily
-\frametitle{A brief review of Markov chains}
-\begin{itemize}
-\item {\bf Example (cont):  }  More generally, if we assume that $\pi_{t-1} = \tilde{\pi}$ then
-$$
-\Cor(X_t, X_{t-1}) = (1- 2\alpha)
-$$
-(the second eigenvalue!!).  Hence, when $\alpha \approx 0$ we have a chain with high positive autocorrelation that converges very slowly to the stationary distribution, while $\alpha \approx 1$ leads to a chain with strong negative autocorrelation that tends to very often alternate among states.
-\end{itemize}
-}
-
-
-
-
-
-
-\frame{
-\sffamily
-\frametitle{A brief review of Markov chains}
-\begin{itemize}
-\item {\bf Example (cont):  }  These are realizations of the Markov chain for different values of $\alpha$
-\end{itemize}
-\includegraphics[height=3.75cm,angle=0]{plots/markovchain1.pdf}
-\includegraphics[height=3.75cm,angle=0]{plots/markovchain5.pdf}
-\includegraphics[height=3.75cm,angle=0]{plots/markovchain9.pdf}
-\begin{itemize}
-\item In all cases about half of the point are at state 1 and half at state 2, but the dependence changes dramatically!
-\end{itemize}
-}
-
-
-
-\frame{
-\sffamily
-\frametitle{A brief review of Markov chains}
-\begin{itemize}
-\item {\bf Example (cont):  }  Which one is better for estimating $\Pr(X_t=1)$?  At first sight it would seem that $\alpha = 0.5$ (no autocorrelation) is the best.  However, you might argue that $\alpha =0.9$ (negative autocorrelation) is better.   To see why, assume that the initial state is drawn from the stationary distribution and consider the empirical estimate of the probability of state 1, $\frac{1}{T} \sum_{b=1}^{T} \ind_{(X_t = 1)}$.
-\begin{multline*}
-\Var \left\{ \frac{1}{T} \sum_{b=1}^{T} \ind_{(X_t = 1)} \right\} = \\
-%
-\frac{\Var(X_0)}{T} + \frac{2\Var(X_0)}{T^2} \sum_{i=1}^{T} \sum_{j=i+1}^{T} \Cor(X_i, X_j)
-\end{multline*}
-$\sum_{i=1}^{T} \sum_{j=i+1}^{T} \Cor(X_i, X_j)$ is decreasing with $\alpha$.
-\end{itemize}
-}
-
-
-
-\frame{
-\sffamily
-\frametitle{A brief review of Markov chains}
-\begin{itemize}
-\item \alert{Negative correlations are actually good for Monte Carlo integration (because, although we still need to worry about convergence, they reduce the variance of the estimators).  }
-
-\item However, most of the algorithms we employ in Bayesian statistics produce chains that are positively autocorrelated, so we will typically frown upon autocorrelation.
-\end{itemize}
-}
-
-
-\frame{
-\sffamily
-\frametitle{A brief review of Markov chains}
-{\bf Suggested exercise:  } Compute $\Cor(X_t, X_{t+k})$ for $k \ge 1$ if $X_t \sim \tilde{\pi}$. (Recall that $\Cor(X_t, X_{t+1}) = (1-2\alpha)$.)
-}
-
 
 \frame{
 \sffamily
@@ -612,27 +502,11 @@ $\sum_{i=1}^{T} \sum_{j=i+1}^{T} \Cor(X_i, X_j)$ is decreasing with $\alpha$.
 \item Given a transition matrix, finding the stationary/limiting distribution is not too difficult.  However, in Bayesian statistics we are faced with the opposite problem:  we know the stationary/limiting distribution and need to come up with (at least one) transition kernel that generates it.
 
 \item Reversibility is a concept that can help in the construction of such chains.
+
+\item A Markov chain with transition matrix $\bfP$ and stationary distribution $\tilde{\bfpi}$ is said to be \textit{reversible} if $\tilde{\pi}_i p_{i,j} = \tilde{\pi}_j p_{j,i}$.  This equation is called the \alert{detailed balance equation}.
+
+\item Roughly speaking, if we know what the stationary distribution should look like, the detailed balance equations tell us that we can choose $p_{i,j}$ for $i > j$ in whichever way we want as long we then make $p_{j,i} = \frac{\pi_{i}}{\pi_{j}} p_{i,j}$.
 \end{itemize}
-}
-
-
-
-\frame{
-\sffamily
-\frametitle{A brief review of Markov chains}
-\begin{itemize}
-\item A Markov chain with transition matrix $\bfP$ and stationary distribution $\tilde{\bfpi}$ is said to be \textit{reversible} if $\tilde{\pi}_i p_{i,j} = \tilde{\pi}_j p_{j,i}$.  This equation is called the \textit{detailed balance equation}.
-
-\item Roughly speaking, If we know what the stationary distribution should look like, the detailed balance equations tell us that we can choose $p_{i,j}$ for $i > j$ in whichever way we want as long we then make $p_{j,i} = \frac{\pi_{i}}{\pi_{j}} p_{i,j}$.  (Of course, recall that the transition matrix still has to be row stochastic ...).
-\end{itemize}
-}
-
-
-
-\frame{
-\sffamily
-\frametitle{A brief review of Markov chains}
-{\bf Suggested exercise:  }  Construct one reversible and one non-reversible three-state chain with limiting distribution $\left( \frac{1}{3}, \frac{1}{3}, \frac{1}{3} \right)$.
 }
 
 

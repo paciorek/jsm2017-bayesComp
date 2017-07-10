@@ -13,15 +13,16 @@ mixCode <- nimbleCode({
     }
     omega ~ dbeta(1, 1)
     for(j in 1:2) {
-        theta[j] ~ dnorm(0, sd = 1000)
-        sigma[j] ~ dhalfflat()
+        theta[j] ~ dnorm(mu, tau2)
+        sigma[j] ~ dinvgamma(a, c)
     }
 })
 
 ## @knitr fit-mixture-auxiliary
 
 mixModel <- nimbleModel(mixCode, data = list(y = y),
-                     constants = list(n = n),
+                        constants = list(n = n, mu = 0, tau2 = .000001,
+                                         a = .001, c = .001),
                      inits = list(omega = 0.5, theta = rep(mean(y), 2),
                                   sigma = rep(sd(y), 2),
                                   ksi = sample(c(0,1), n, replace = T)))

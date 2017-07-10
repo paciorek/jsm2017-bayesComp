@@ -1,5 +1,37 @@
 \section{Approximation methods}
 
+
+\frame{
+\sffamily
+\frametitle{Variational algorithms}
+\begin{itemize}
+\item The idea behind variational algorithms is to replace the true (intractable) posterior $p(\bftheta \mid \bfy)$ by a (tractable) approximation $q_{\bfeta}$ ``close'' to $p(\bftheta \mid \bfy)$ and dependent on a set of tunable parameters $\bfeta$.
+
+\item Different ways to meassure how ``close'' $p(\bftheta \mid \bfy)$ and $q_{\bfeta}(\bftheta)$ are.  Kullback–Leibler divergence is popular:
+\begin{itemize}
+\item \alert{$K(q||p) = \E_q \left[ \log \left\{ \frac{q_{\bfeta}(\bftheta)}{p(\bftheta \mid \bfy)} \right] \right\}$ $\Rightarrow$ Variational.}
+\item $K(p||q) = \E_p \left[ \log \left\{ \frac{p(\bftheta \mid \bfy)}{q_{\bfeta}(\bftheta)} \right] \right\}$ $\Rightarrow$ Expectation-propagation.
+\end{itemize}
+
+\item Approximation is given by $q_{\hat{\bfeta}}(\bftheta)$ where 
+$$
+\hat{\bfeta} = \arg \max_{\bfeta} \E_q \left\{ \log \left[ \frac{q_{\bfeta}(\bftheta)}{p(\bftheta \mid \bfy)} \right] \right\}
+$$
+\end{itemize}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 \frame{
 \sffamily
 \frametitle{Variational algorithms}
@@ -7,32 +39,13 @@
 
 \item In principle, we have a lot of freedom in choosing the functional form of $q_{\bfeta}$.  However, in practice we are limited by the need to have a tractable approximation, to compute the expectations $\E_{q}\left\{ \log \left[ q_{\bfeta}(\bftheta) \right] \right\}$ and $\E_{q}\left\{ \log \left[ p_{\bfeta}(\bftheta \mid \bfy) \right] \right\}$ and solve the associated maximization problem.
 
-\begin{itemize}
-\item As we will see in a second, this is easy in conditionally conjugate models (the same type of models where Gibbs sampling is straightforward) if we make some key assumption about $q_{\bfeta}(\bftheta)$.
-
-\item Extension to non-conjugate models are constantly being developed, but they are model specific and often rely on heuristics.
-\end{itemize}
-\end{itemize}
-}
-
-
-
-
-\frame{
-\sffamily
-\frametitle{Variational algorithms in exponential families}
-\begin{itemize}
-\item So called \textit{mean field} variational algorithms, which use a fully factorized $q$, 
+\item So-called \textit{mean field} variational algorithms, which use a fully factorized $q$, 
 \begin{align*}
 q_{\bfeta} (\bftheta) = \prod_{k=1}^{p} q_{k,\bfeta_k}(\theta_k)
 \end{align*}
 are extremely popular because of their tractability.
- 
+
 \item As with the Gibbs sampler, we might not fully factorize $q_{\bfeta} (\bftheta)$ and instead work with blocks of parameters.
-
-\item Furthermore, for conditionally conjugate models that belong to the exponential family, it is natural to set $q_{k,\bfeta_k}(\theta_k)$ as a member of the conditional conjugate prior family.
-
-\item It is also natural in this case to use a conjugate gradient algorithm to solve the maximization problem, recursively updating each $\bfeta_i$ one at a time.
 \end{itemize}
 }
 
@@ -44,7 +57,7 @@ are extremely popular because of their tractability.
 \sffamily
 \frametitle{Variational algorithms in exponential families}
 \begin{itemize}
-\item If all the previous assumptions are satisfied, the variational algorithm looks very much like a Gibbs sampler.  To be more specific, let the full conditional distribution for $\theta_k$ be of the form
+\item Within the exponential family, variational algorithms are quite straightforward and look like Gibbs samplers.  Let the full conditional distribution for $\theta_k$ be of the form
 \begin{align*}
 p(\theta_k \mid \bftheta_{-k}, \bfy) \propto 
 %
@@ -58,6 +71,8 @@ $$
 then, $\hat{\eta}_{k,l} = \E_{q_{-k}} \left\{ g_{k,l} \left(\bftheta_{-k}, \bfy\right) \right\}$.  By iterating updates of this form we can develop a very fast computational algorithm!
 \end{itemize}
 }
+
+
 
 
 
@@ -129,7 +144,7 @@ and
 \eta^{(b)}_{\sigma^2,1} &= a + \frac{n}{2}  \\
 \eta^{(b)}_{\sigma^2,2} &= c + \frac{1}{2}  \sum_{i=1}^{n} \left\{ y_i^2 - 2y_i \eta^{(b)}_{\theta,1} + \eta^{(b)}_{\theta,2} + \eta^{2(b)}_{\theta,1} \right\}
 \end{align*}
-Compare these expressions against those for the Gibbs sampler!
+Compare against the Gibbs sampler updates!
 \end{itemize}
 }
 
@@ -159,17 +174,6 @@ Compare these expressions against those for the Gibbs sampler!
 \end{itemize}
 }
 
-
-
-\frame{
-\sffamily
-\frametitle{Variational algorithms in exponential families}
-\begin{itemize}
-\item The marginals are almost identical, but not surprisingly you can see more differences in the joint distribution.
-
-\item Variational Bayes works reasonably well in this case because the parameters are almost orthogonal a posteriori.  In situations where the parameters are highly correlated a posteriori the approximation can be very poor!
-\end{itemize}
-}
 
 
 
@@ -329,55 +333,24 @@ Blocked Gibbs sampler  &  Variational approximation \\
 
 
 
-\frame{
-\sffamily
-\frametitle{Variational algorithms}
-
-{\bf Suggested exercise:  } Develop and implement a variational algorithm for a Gaussian random effects model where $y_{i,j} \mid \mu, \theta_i, \sigma^2 \sim \normal(\mu + \theta_i, \sigma^2)$, $\theta_i \mid \tau^2 \sim \normal(0, \tau^2)$, $\mu \sim \normal(\eta, \kappa^2)$, $\sigma^2 \sim \IGam(a_{\sigma}, c_{\sigma})$ and $\tau^2 \sim \IGam(a_{\tau}, b_{\tau})$.
-}
-
-
-
-
 
 
 \frame{
 \sffamily
 \frametitle{Some concluding remarks about variational algorithms}
 \begin{itemize}
-\item You could try to maximize $K(q || p)$ instead of $K(p || q)$.  This leads to \textit{expectation propagation} algorithms, which are also popular in the machine learning literature.  I will not discuss them further here.
 
-\item The minimization of $K(p || q)$ can also be justified as maximizing the bound on the log marginal likelihood:
+\item The minimization of $K(q || p)$ can also be justified as maximizing the bound on the log marginal likelihood:
 \begin{align*}
 \log p(\bfy) \ge \E_{q} \left\{ \log p(\bftheta, \bfy) \right\} - \E_q \left\{ \log q_{\bfeta}(\bftheta) \right\}
 \end{align*}
-The gap in the bound is precisely the divergence between $q_{\bfeta}$ and the true posterior.
+The gap in the bound is precisely the divergence between $q_{\bfeta}$ and the true posterior.  This value of this gap is usually monitored to assess convergence of the algorithm.
 
+\item Variational Bayes works well at approximating the marginal posteriors of the parameters on which it is derived, but typically fails for joint distributions/transformations involving multiple parameters.
 
+\item For complex models variational algorithms tend to get stuck in local modes.  It is very important to perform multiple runs from \textit{overdispersed} initial values and verify that the algorithm converges to the same set of values.
 \end{itemize}
 }
 
-
-
-\frame{
-\sffamily
-\frametitle{TMP}
-
-\fix can probably do whatever example we did for HMC using VB in Stan (or discuss whether to do one of the mixture examples in Stan); might leave Stan out of this section to save work and time
-
-}
-
-
-\frame{
-\sffamily
-\frametitle{Some concluding remarks about variational algorithms}
-\begin{itemize}
-\item In my experience, for complex models variational algorithms tend to get stuck in local modes.  It is very important to perform multiple runs from \textit{overdispersed} initial values and verify that the algorithm converges to the same set of values.  If not, one way to select among multiple solutions is to monitor the free energy,
-$$
-\int \log \frac{p(\bfy, \bftheta)}{q_{\bfeta}(\bftheta)} q_{\bfeta}(\bftheta) \dd \bftheta
-$$
-and select the set of parameters that minimizes the bound (note that the free energy involves the joint, not the posterior, so it is usually easy to compute!).
-\end{itemize}
-}
 
 

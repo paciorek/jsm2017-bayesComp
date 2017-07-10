@@ -110,7 +110,7 @@ for(s in 1:r){
     thetaProp <- rnorm(1, thetaCurr, sqrt(tau2))
     rho <- sum(dgumbel(x, thetaProp, log = TRUE)) -
         sum(dgumbel(x, thetaCurr, log = TRUE))
-    ## likelihood and prior are evaluated on log to avoid underflow
+    ## likelihood and prior evaluated on log scale to avoid underflow
     rho <- rho + dnorm(thetaProp, xi, sqrt(kappa2), log = TRUE) -
         dnorm(thetaCurr, xi, sqrt(kappa2), log = TRUE)
     u <- runif(1, 0, 1)

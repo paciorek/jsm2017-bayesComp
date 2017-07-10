@@ -1,23 +1,13 @@
-\frame{
-\sffamily
-\frametitle{General design rules for MH algorithms}
-\begin{itemize}
-\item  MH algorithms algorithms are highly modular.
-\item  There is an obvious trade-off between simplicity of implementation, speed, and mixing.  For example, component-wise algorithms that exploit Gibbs sampling steps are typically easier to code and require  little or no tuning, but they might mix very slowly.
-\end{itemize}
-}
-
-
 
 \frame{
 \sffamily
 \frametitle{General design rules for MH algorithms}
 \begin{itemize}
-\item Block as many parameters as you can!
+\item  MH algorithms algorithms are highly modular but there is a trade-off between simplicity of implementation, speed, and mixing.
 
-\item \fix Abel, I'd rather replace the above bullet with: Block highly-correlated parameters (when there is no strong dependence individual samplers can move further than a blocked Gaussian)
+\item Block highly-correlated parameters (when there is no strong dependence individual samplers can move further than a blocked Gaussian)
 
-\item Reparameterizing the model center or to make it orthogonal is usually helpful!  This is easy to do in the context of linear model, but not always so in other case (computing information matrices might provide hints).
+\item Reparameterizing the model to center it or to make it orthogonal is usually helpful!  This is easy to do in the context of linear model, but not always so in other case (computing information matrices might provide hints).
 
 \item As a rule of thumb, you want to ``integrate out'' as many parameters as you can before attempting to use any Metropolis/Gibbs steps.
 However, introducing latent variables can greatly simplify algorithms and in some cases improve mixing.
@@ -26,114 +16,8 @@ However, introducing latent variables can greatly simplify algorithms and in som
 
 
 
-\frame{
-\sffamily
-\frametitle{Blocking}
-\begin{itemize}
-\item To better understand blocking, consider sampling from $p(\theta_1, \theta_2, \theta_3)$.  
-\begin{itemize}
-\item The ``obvious'' Gibbs sampling approach is to sample from the three full conditional distributions $p(\theta_1 \mid \theta_2, \theta_3)$, $p(\theta_2 \mid \theta_1, \theta_3)$ and $p(\theta_3 \mid \theta_1, \theta_2)$.
-
-\item Typically a better one is to decompose 
-$$
-p(\theta_1, \theta_2, \theta_3) = p(\theta_1) p(\theta_2, \theta_3 \mid \theta_1)
-$$ 
-and then sample either from the pair $p(\theta_1)$ and $p(\theta_2, \theta_3 \mid \theta_1)$ or (alternatively) from the trio $p(\theta_1 \mid \theta_2, \theta_3)$, $p(\theta_2 \mid \theta_3)$ and $p(\theta_3 \mid \theta_2)$.
-\end{itemize}
-\end{itemize}
-}
 
 
-
-
-
-
-\frame{
-\sffamily
-\frametitle{Blocking}
-Consider sampling from the normal-Gamma distribution
-$$
-p(\theta_1, \theta_2, \theta_3) \propto \theta_1^{2} \exp\left\{ - \frac{\theta_1}{2} \left( 1 + \theta_2^2 + \theta_3^2 - \frac{2 \theta_2 \theta_3}{\sqrt{2}} \right) \right\} 
-$$
-\begin{itemize}
-\item The naive Gibbs sampler would sample from:
-\begin{itemize}
-\item $\theta_1 \mid \theta_2, \theta_3 \sim \Gam \left( 3 , \frac{1}{2} \left( 1 + \theta_2^2 + \theta_3^2 - \frac{2 \theta_2 \theta_3}{\sqrt{2}} \right) \right)$
-
-\item $\theta_2 \mid \theta_1, \theta_3 \sim \normal \left( \frac{\theta_3}{\sqrt{2}}, \theta_1^{-1} \right)$
-
-\item $\theta_3 \mid \theta_1, \theta_2 \sim \normal \left( \frac{\theta_2}{\sqrt{2}}, \theta_1^{-1} \right)$
-\end{itemize}
-\end{itemize}
-}
-
-
-
-
-
-\frame{
-\sffamily
-\frametitle{Blocking}
-\begin{itemize}
-\item An improvement can be obtained by blocking $\theta_2$ and $\theta_3$,
-\begin{itemize}
-\item $\theta_1 \mid \theta_2, \theta_3 \sim \Gam \left( 3 , \frac{1}{2} \left(1 + \theta_2^2 + \theta_3^2 - \frac{2 \theta_2 \theta_3}{\sqrt{2}} \right) \right)$
-
-\item $\theta_2, \theta_3 \mid \theta_1 \sim \normal \left( 
-\left( \begin{matrix}
-0 \\ 0
-\end{matrix} \right)
-, \frac{1}{\theta_1}
-\left( \begin{matrix} 
-2 & \sqrt{2} \\
-\sqrt{2} & 2
-\end{matrix} \right)
-\right)$
-\end{itemize}
-
-\item An even better sampler can be obtained by integrating first over $(\theta_2, \theta_3)$ in addition to blocking
-\begin{itemize}
-\item $\theta_1 \sim \Gam(2, \frac{1}{2})$
-
-\item $\theta_2, \theta_3 \mid \theta_1 \sim \normal \left( 
-\left( \begin{matrix}
-0 \\ 0
-\end{matrix} \right)
-, \frac{1}{\theta_1 }
-\left( \begin{matrix} 
-2 & \sqrt{2} \\
-\sqrt{2} & 2
-\end{matrix} \right)
-\right)$
-\end{itemize}
-\end{itemize}
-}
-
-
-
-
-
-
-\frame{
-\sffamily
-\frametitle{Blocking}
-
-\begin{tabular}{ll}
-Scheme 1 (no blocking)   &  Scheme 2 (blocking $\theta_2$ and $\theta_3$) \\
-\includegraphics[height=4.9cm,angle=0]{plots/blocking1.pdf}   &
-\includegraphics[height=4.9cm,angle=0]{plots/blocking2.pdf}
-\end{tabular}
-
-Code to generate these graphs is available \texttt{blocking.R}.
-}
-
-\frame{
-\sffamily
-\frametitle{Blocking}
-
-\fix I've left the above slides in as they pertain to marginalization as well as blocking and we should discuss whether the GLMM example below is sufficient in terms of points we want to make
-
-}
 
 \frame{
 \sffamily
@@ -166,10 +50,13 @@ Alternatively, NIMBLE provides a \emph{cross-level} sampler that blocks hyperpar
 
 \begin{itemize}
 \item {\bf Example (litters GLMM):}
-%% begin.rcode litters-blocked-config, size='tiny'
+
+See \texttt{blocked-litters.R} for NIMBLE code for the blocked sampler.
+
+%% begin.rcode blocked-litters-config, size='tiny'
 %% end.rcode
 
-%% begin.rcode litters-blocked-mcmc, include=FALSE
+%% begin.rcode blocked-litters-mcmc, include=FALSE
 %% end.rcode
 
 \includegraphics[width=3in]{plots/blocked-litters.pdf}
@@ -275,24 +162,10 @@ y_{i,j} \mid \mu, \theta^{*}_i & \sim \normal(\theta^{*}_i, \sigma^2)  ,  &  \th
 \includegraphics[height=5.7cm,angle=0]{plots/centering2.pdf}
 \end{minipage}
 \end{tabular}
+\alert{Centering is not universally better, but it usually is!}
+See \citep{yu2011center} for how to combine centered and uncentered.
+
 \end{center}
-}
-
-
-
-
-\frame{
-\sffamily
-\frametitle{Centering}
-
-Exercise: experiment with changing the value of $\tau^2$ and see how that impacts the performance of the centered vs. uncentered samplers.
-
-\alert{Centering is not universally better, but is usually is!}
-
-There's been an interesting literature (somewhat) recently on understanding when the different approaches work better and on combining centering and non-centering \citep{yu2011center}. 
-
-\fix decide what to do with this slide - Abel formerly had results for other values of tau2; do we still want them? Might be overkill.
-
 }
 
 
