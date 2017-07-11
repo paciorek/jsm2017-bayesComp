@@ -16,6 +16,7 @@ gaussianSSMCode <- nimbleCode({
 
 
 ### Generating data
+set.seed(1)
 TT     = 150
 theta.t = rep(0, TT+1)
 y       = rep(0, TT)
@@ -27,21 +28,27 @@ for(i in 1:TT){
 
 ### Creating Nimble Gausian SSM 
 gaussianSSM <- nimbleModel(code = gaussianSSMCode, data = list(y = y), 
-                           constants = list(sigma2 = sigma2, tau2 = tau2, mm0 = mm0,
-                                            CC20 = CC20, TT = 150),
+                           constants = list(sigma2 = sigma2, tau2 = tau2,
+                                            mm0 = mm0, CC20 = CC20, TT = 150),
                            dimensions = list(theta.t = 151, y = 150))
 CgaussianSSM <- compileNimble(gaussianSSM)
 
-### Creating Filter.  "Thresh = 1" option ensures that resampling will happen at each time point.
-gaussianSSM_SIRfilter <- buildBootstrapFilter(gaussianSSM, nodes = 'theta.t', control = list(thresh = 1, saveAll = TRUE))
-CgaussianSSM_SIRfilter <- compileNimble(gaussianSSM_SIRfilter, project = gaussianSSM)
+### Creating Filter.
+## "thresh = 1" option ensures that resampling will happen at each time point.
+gaussianSSM_SIRfilter <- buildBootstrapFilter(gaussianSSM, nodes = 'theta.t',
+                                 control = list(thresh = 1, saveAll = TRUE))
+CgaussianSSM_SIRfilter <- compileNimble(gaussianSSM_SIRfilter,
+                                        project = gaussianSSM)
 BB = 10000
 CgaussianSSM_SIRfilter$run(BB)
-weights.out <- exp(as.matrix(CgaussianSSM_SIRfilter$mvWSamples)[, 152:302])/apply(exp(as.matrix(CgaussianSSM_SIRfilter$mvWSamples)[, 152:302]), 2, sum)
+weights.out <- exp(as.matrix(CgaussianSSM_SIRfilter$mvWSamples)[, 152:302]) /
+    apply(exp(as.matrix(CgaussianSSM_SIRfilter$mvWSamples)[, 152:302]), 2, sum)
 particleSamples <- as.matrix(CgaussianSSM_SIRfilter$mvWSamples)[, 1:151]
 mm.SIR <- apply(weights.out*particleSamples, 2, sum)
 CC2.SIR <- apply(weights.out*particleSamples^2, 2, sum) - mm.SIR^2
 ESS <- CgaussianSSM_SIRfilter$returnESS()
+
+print(mean(ESS[-1]))
 
 ### Exact solution
 mm  = rep(0,TT+1)
@@ -55,35 +62,38 @@ for(i in 1:TT){
 
 
 ## Expected values
-quartz()
-plot(theta.t, type="n", xlab="t", ylab=expression(paste("E(",theta[t],"|",y[1:t],")")), lwd=2)
+pdf(file.path("plots","Gaussian_means.pdf"))
+plot(theta.t, type="n", xlab="t", ylab=expression(
+                   paste("E(",theta[t],"|",y[1:t],")")), lwd=2)
 lines(mm[-1], col="red", lwd=2, lty=2)
 lines(mm.SIR[-1], col="blue", lwd=2, lty=3)
-legend(120,3,c("Exact","SIR"), col=c("red","blue"), lty=c(2,3), lwd=2, bty="n")
-dev.print(dev=pdf,file="Gaussian_means.pdf")
+legend(120,3,c("Exact","SIR"), col=c("red","blue"), lty=c(2,3), lwd=2,
+        bty="n")
+dev.off()
 
 
 ## Confidence intervals
-quartz()
-plot(theta.t, type="n", xlab="t", ylab=expression(paste("95% credible interval for ",theta[t])), lwd=2)
+pdf(file.path("plots","Gaussian_confint.pdf"))
+plot(theta.t, type="n", xlab="t", ylab=expression(
+      paste("95% credible interval for ",theta[t])), lwd=2)
 lines(mm[-1]-2*sqrt(CC2[-1]), col="red", lwd=1, lty=2)
 lines(mm[-1]+2*sqrt(CC2[-1]), col="red", lwd=1, lty=2)
 lines(mm.SIR[-1]-2*sqrt(CC2.SIR[-1]), col="blue", lwd=1, lty=3)
 lines(mm.SIR[-1]+2*sqrt(CC2.SIR[-1]), col="blue", lwd=1, lty=3)
 legend(120,3,c("Exact","SIR"), col=c("red","blue"), lty=c(2,3), lwd=2, bty="n")
-dev.print(dev=pdf,file="Gaussian_confint.pdf")
+dev.off()
 
 
 ## ESS as a function of time
-quartz()
+pdf(file.path("plots","Gaussian_ESSintime.pdf"))
 plot(ESS[-1], type="l", ylab="ESS", xlab="t",ylim=c(0,BB))
-dev.print(dev=pdf,file="Gaussian_ESSintime.pdf")
+dev.off()
 
 
 ## ESS vs logarithm of the variance
-quartz()
+pdf(file.path("plots","Gaussian_ESSvslogVar.pdf"))
 plot(log(apply(weights.out,2,var)[-1]), ESS[-1], ylab="ESS", xlab=expression(paste("log(Var(",omega[t]^{(b)},"))")),ylim=c(0,BB))
-dev.print(dev=pdf,file="Gaussian_ESSvslogVar.pdf")
+dev.off()
 
 
 

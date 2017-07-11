@@ -270,7 +270,7 @@ $$
 \sffamily
 \frametitle{Filtering:  Auxiliary particle filters}
 \begin{itemize}
-\item {\bf Example (a simple linear Gaussian system, cont):}  The APF for the linear Gaussian system we described in our previous example (see file \texttt{GaussianAPF.R}) gives a slightly higher average ESS (4079 vs.\ SIR's 4035).
+\item {\bf Example (a simple linear Gaussian system, cont):}  The APF for the linear Gaussian system we described in our previous example (see file \texttt{GaussianAPF.R}) gives a lower average ESS (1687 vs.\ SIR's 4117).
 \end{itemize}
 \includegraphics[height=5.6cm,angle=0]{plots/Gaussian_means_APF.pdf}
 \includegraphics[height=5.6cm,angle=0]{plots/Gaussian_ESSintime_APF.pdf}
