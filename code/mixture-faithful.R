@@ -45,8 +45,8 @@ postMeans
 mean(y > 65)
 
 xgrid <- seq(min(y), max(y), len = 100)
-predDens <- postMeans['omega']*dnorm(xgrid, postMeans['theta[1]'], postMeans['sigma[1]']) +
-         (1-postMeans['omega'])*dnorm(xgrid, postMeans['theta[2]'], postMeans['sigma[2]'])
+predDens <- (1-postMeans['omega'])*dnorm(xgrid, postMeans['theta[1]'], postMeans['sigma[1]']) +
+         postMeans['omega']*dnorm(xgrid, postMeans['theta[2]'], postMeans['sigma[2]'])
 
 hist(y, freq = FALSE)
 lines(xgrid, predDens)
