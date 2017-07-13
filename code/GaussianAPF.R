@@ -6,7 +6,7 @@ mm0    = 0
 CC20   = 4
 
 ### Nimble Gausian SSM Model Code
-gaussianSSMCode <- nimbleCode({
+gaussianSSM.code <- nimbleCode({
   theta.t[1] ~ dnorm(mm0, sd = sqrt(CC20))
   for(i in 1:TT){
     theta.t[i+1] ~ dnorm(theta.t[i], sd = sqrt(tau2))
@@ -27,7 +27,7 @@ for(i in 1:TT){
 }
 
 ### Creating Nimble Gausian SSM 
-gaussianSSM <- nimbleModel(code = gaussianSSMCode, data = list(y = y), 
+gaussianSSM <- nimbleModel(code = gaussianSSM.code, data = list(y = y), 
                            constants = list(sigma2 = sigma2, tau2 = tau2,
                                             mm0 = mm0, CC20 = CC20, TT = 150),
                            dimensions = list(theta.t = 151, y = 150))
@@ -35,34 +35,44 @@ CgaussianSSM <- compileNimble(gaussianSSM)
 
 ### Creating SIR Filter.
 ### "thresh = 1" option ensures that resampling will happen at each time point.
-gaussianSSM_SIRfilter <- buildBootstrapFilter(gaussianSSM, nodes = 'theta.t',
+gaussianSSM.SIRfilter <- buildBootstrapFilter(gaussianSSM, nodes = 'theta.t',
                                   control = list(thresh = 1, saveAll = TRUE))
-CgaussianSSM_SIRfilter <- compileNimble(gaussianSSM_SIRfilter,
+CgaussianSSM.SIRfilter <- compileNimble(gaussianSSM.SIRfilter,
                                         project = gaussianSSM)
 BB = 10000
-CgaussianSSM_SIRfilter$run(BB)
-weights.out <- exp(as.matrix(CgaussianSSM_SIRfilter$mvWSamples)[, 152:302]) /
-    apply(exp(as.matrix(CgaussianSSM_SIRfilter$mvWSamples)[, 152:302]), 2, sum)
-particleSamples <- as.matrix(CgaussianSSM_SIRfilter$mvWSamples)[, 1:151]
-mm.SIR <- apply(weights.out*particleSamples, 2, sum)
-CC2.SIR <- apply(weights.out*particleSamples^2, 2, sum) - mm.SIR^2
-ESS.SIR <- CgaussianSSM_SIRfilter$returnESS()
+CgaussianSSM.SIRfilter$run(BB)
 
+### The first 151 columns of the output will be particle samples 
+### for all 151 time points.
+particle.samples <- as.matrix(CgaussianSSM.SIRfilter$mvWSamples)[, 1:151]
+
+### Columns 152 through 302 of the output will be the unnormalized log weights
+### for each particle at each time point.
+log.weights.out <- as.matrix(CgaussianSSM.SIRfilter$mvWSamples)[, 152:302]
+### Below, we un-log and normalize the weights
+weights.out <-  exp(log.weights.out)/apply(exp(log.weights.out), 2, sum)
+
+mm.SIR <- apply(weights.out*particle.samples, 2, sum)
+CC2.SIR <- apply(weights.out*particle.samples^2, 2, sum) - mm.SIR^2
+ESS.SIR <- CgaussianSSM.SIRfilter$returnESS()
+
+### ESS averaged over all time points. Time point 1 corresponds to the 
+### prior distribution placed on theta in the model, so we drop it
 print(mean(ESS.SIR[-1]))
 
 ### Creating APF Filter.  
-gaussianSSM_APfilter <- buildAuxiliaryFilter(gaussianSSM, nodes = 'theta.t',
+gaussianSSM.APfilter <- buildAuxiliaryFilter(gaussianSSM, nodes = 'theta.t',
                           control = list(lookahead = 'mean', saveAll = TRUE))
-CgaussianSSM_APfilter <- compileNimble(gaussianSSM_APfilter,
+CgaussianSSM.APfilter <- compileNimble(gaussianSSM.APfilter,
                                 project = gaussianSSM, resetFunctions = TRUE)
 BB = 10000
-CgaussianSSM_APfilter$run(BB)
-weights.out <- exp(as.matrix(CgaussianSSM_APfilter$mvWSamples)[, 152:302]) /
-     apply(exp(as.matrix(CgaussianSSM_APfilter$mvWSamples)[, 152:302]), 2, sum)
-particleSamples <- as.matrix(CgaussianSSM_APfilter$mvWSamples)[, 1:151]
-mm.APF <- apply(weights.out*particleSamples, 2, sum)
-CC2.APF <- apply(weights.out*particleSamples^2, 2, sum) - mm.APF^2
-ESS.APF <- CgaussianSSM_APfilter$returnESS()
+CgaussianSSM.APfilter$run(BB)
+particle.samples <- as.matrix(CgaussianSSM.APfilter$mvWSamples)[, 1:151]
+log.weights.out <- as.matrix(CgaussianSSM.APfilter$mvWSamples)[, 152:302]
+weights.out <-  exp(log.weights.out)/apply(exp(log.weights.out), 2, sum)
+mm.APF <- apply(weights.out*particle.samples, 2, sum)
+CC2.APF <- apply(weights.out*particle.samples^2, 2, sum) - mm.APF^2
+ESS.APF <- CgaussianSSM.APfilter$returnESS()
 
 print(mean(ESS.APF[-1]))
 
@@ -88,6 +98,9 @@ legend(115,4,c("Exact","SIR","APF"), col=c("red","blue","green"),
        lty=c(2,3,4), lwd=2, bty="n")
 dev.off()
 
+### Recall that time point 1 corresponds to the prior distribution placed on
+### theta in the model, which is not of interest.
+### Therefore, we drop the first time point in all plots below.
 
 ## Confidence intervals
 pdf(file.path("plots", "Gaussian_confint_APF.pdf"))
