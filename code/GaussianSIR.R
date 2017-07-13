@@ -29,8 +29,8 @@ for(i in 1:TT){
 ### Creating Nimble Gausian SSM 
 gaussianSSM <- nimbleModel(code = gaussianSSM.code, data = list(y = y), 
                            constants = list(sigma2 = sigma2, tau2 = tau2,
-                                            mm0 = mm0, CC20 = CC20, TT = 150),
-                           dimensions = list(theta.t = 151, y = 150))
+                                            mm0 = mm0, CC20 = CC20, TT = TT),
+                           dimensions = list(theta.t = TT+1, y = TT))
 CgaussianSSM <- compileNimble(gaussianSSM)
 
 ### Creating Filter.
