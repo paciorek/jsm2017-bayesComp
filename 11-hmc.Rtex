@@ -446,7 +446,7 @@ using a standard Gaussian distribution for the momentum variables.
 
 \item Tuning HMC algorithms can be tricky, but the Stan software was developed for just this purpose. Stan uses its own language for specifying the statistical model.
 
-\item \texttt{hmc-cox.R} provides a Stan implementation for a Cox survival analysis model. 
+\item \texttt{hmc-cox.R} provides a Stan implementation for a Cox survival analysis model. See Appendix for more details on Stan and the Cox example.
 
 \item NIMBLE doesn't provide HMC because we're just now implementing automatic differentation and because it's Stan's sweet spot.  
 \end{itemize}

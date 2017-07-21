@@ -1,0 +1,95 @@
+
+
+\section{Appendix}
+
+\frame{
+\sffamily
+\frametitle{Stan example: Cox regression}
+\begin{itemize}
+\item {\bf Example (Cox regression):} Recall that standard Cox regression specifies the hazard function as:
+$$ \lambda(t|z) = \lambda_0(t)\exp(z^\top \beta) $$
+for an unspecified baseline hazard, $\lambda_0(t)$.
+
+With right-censoring, one has the likelihood (for one patient):
+$$
+(\lambda_0(w_i) \exp(z_i^\top \beta))^{v_i} \exp\left(
+   -\exp(z_i^\top \beta) \int_0^{w_i} \lambda_0(u)du \right)
+   $$
+   
+   where $w_i$ is the minimum of the failure time and the censoring time for the patient and $v_i$ is 1 if the person is not censored.
+
+It turns out this likelihood can be written as a Poisson distribution when one assumes piecewise constant baseline hazard -- we'll use this in the implementation.
+\end{itemize}
+}
+
+\frame{
+\sffamily
+\frametitle{Stan example: Bayesian Cox regression}
+\begin{itemize}
+\item {\bf Example (Cox regression):} A Bayesian treatment requires either a prior for $\lambda_0(t)$ or use of the Kalbfleisch (1978) result that Cox's partial likelihood can be used as an approximation to an actual likelihood, with a prior placed simply on the regression coefficients.
+
+Considering the fully Bayesian approach, a canonical solution has been to assume a piecewise constant hazard model with independent jumps at the failure times. The size of the jumps is centered on those in a parametric hazard model, $\lambda_0^*(t)$ (such as a Weibull) using a gamma distribution for conjugacy.
+$$
+\lambda_0(t)dt \sim \mbox{Gamma}(c\lambda_0^*(t)dt, c)
+$$
+This construction is called a gamma process.
+\end{itemize}
+}
+
+
+\frame{
+\sffamily
+\frametitle{Stan example: Stan overview}
+Stan focuses on HMC, so its primary computation is of the full log posterior density.
+\begin{itemize}
+\item \texttt{model} block of code uses imperative syntax (order matters) to encode calculation of log posterior.
+\item BUGS-style distributional statements are allowed.
+\item Stan also has its own language for encoding computation, including full linear algebra.
+\end{itemize}
+
+Stan generates C++ from the model code to implement HMC for the model and then compiles it to an executable, similar to NIMBLE. 
+
+Note: Stan cannot handle discrete parameters (discrete data are fine), so any implementation would require marginalization over such parameters.
+
+}
+
+\frame{
+\sffamily
+\frametitle{Stan example: Stan overview}
+Other blocks of Stan code for a model describe:
+\begin{itemize}
+\item \texttt{data}: input data and what NIMBLE calls constants
+\item \texttt{transformed data}: fixed hyperparameters and transformations of input data
+\item \texttt{parameters}: list of unknown parameters
+\item \texttt{generated quantities}: posterior functionals of parameters and/or data
+
+\end{itemize}
+
+}
+
+\begin{frame}[fragile] 
+\sffamily
+\frametitle{Stan example: Stan code for Cox regression}
+
+Here's the core \texttt{model} block for Cox regression for the BUGS leukemia example.
+{\footnotesize
+\begin{verbatim}
+model {
+  beta ~ normal(0, 1000);
+  for(j in 1:NT) {  ## unique times
+    ## gamma process prior for baseline hazard, centered on exponential
+    dL0[j] ~ gamma(r * (t[j + 1] - t[j]) * c, c);
+    for(i in 1:N) { ## patients
+      if (Y[i, j] != 0)
+         ## Poisson representation of likelihood with piecewise
+         ## baseline hazard; Y[i,j] is observation process:
+         ## Y[i,j]=1 if patient i is observed and 0 if censored
+         dN[i, j] ~ poisson(Y[i, j] * exp(beta * Z[i]) * dL0[j]);
+    }     
+  }
+}
+\end{verbatim}
+}
+
+See \texttt{hmc-cox.R} for full Stan implementation.
+\end{frame}

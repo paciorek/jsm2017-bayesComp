@@ -215,6 +215,10 @@ Bayesian inference;
 \bibliography{bayesiancomputation}
 }
 
+%% begin.rcode child='19-stan.Rtex'
+%% end.rcode
+
+
 \end{document}
 
 
