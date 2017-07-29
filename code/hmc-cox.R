@@ -15,7 +15,7 @@ fit <- stan('leuk.stan', chains = 1, data = data, init = list(init))
 smp <- extract(fit, permuted = FALSE, inc_warmup = TRUE)[ , 1, ]
 
 ts.plot(smp[ , 'beta'])
-coda::effectiveSize(smp[100:2000, 'beta']
+coda::effectiveSize(smp[100:2000, 'beta'])
           
 hazCols <- paste0('dL0[', 1:data$NT, ']')
 SplaceboCols <- paste0('S_placebo[', 1:data$NT, ']')
