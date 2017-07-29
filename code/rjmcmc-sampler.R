@@ -28,7 +28,7 @@ RJindicatorSampler <- nimbleFunction(
             ## propose removing it
             currentLogProb <- model$getLogProb(calcNodes)
             currentCoef <- model[[coefNode]]
-            ## reverse jumping density
+            ## reverse jumping density (density for proposed auxiliary variable (i.e., current coefficient)
             logProbReverseProposal <- dnorm(currentCoef, 0, sd = scale, log = TRUE)
             model[[target]] <<- 0
             model[[coefNode]] <<- 0
@@ -41,7 +41,7 @@ RJindicatorSampler <- nimbleFunction(
             proposalCoef <- rnorm(1, 0, sd = scale)
             model[[target]] <<- 1
             model[[coefNode]] <<- proposalCoef
-            ## jumping density
+            ## jumping density (density for current auxiliary variable (i.e., proposed coefficient)
             logProbForwardProposal <- dnorm(proposalCoef, 0, sd = scale, log = TRUE)
             proposalLogProb <- model$calculate(calcNodes)
             log_accept_prob <- proposalLogProb - currentLogProb - logProbForwardProposal
@@ -55,5 +55,5 @@ RJindicatorSampler <- nimbleFunction(
     },
     methods = list(reset = function() {
     })
-    )
+)
 

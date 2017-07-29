@@ -78,7 +78,7 @@ model {
   beta ~ normal(0, 1000);
   for(j in 1:NT) {  ## unique times
     ## gamma process prior for baseline hazard, centered on exponential
-    dL0[j] ~ gamma(r * (t[j + 1] - t[j]) * c, c);
+    dL0[j] ~ gamma(c * r * (t[j + 1] - t[j]), c);
     for(i in 1:N) { ## patients
       if (Y[i, j] != 0)
          ## Poisson representation of likelihood with piecewise

@@ -21,13 +21,14 @@ codeHierarchical <- nimbleCode({
         prob[i] <- pnorm(beta0 + beta_age * dad_age[i] + alpha[j[i]])
         support[i] ~ dbern(prob[i])
     }
+    ## city-level model, including random effects
     for(k in 1:m) 
         alpha[k] ~ dnorm(betaInc * enforce[k] + beta_benefit * benefit[k],
                          sd = sigma_alpha)
 })
 
-## this parameterization, with the hierarchical regression terms moved to the data
-## level, gives better mixing
+## this parameterization, with the hierarchical regression terms (city-level regressors)
+## moved to the data level, gives better mixing even without data augmentation 
 code <- nimbleCode({
     beta_benefit ~ dnorm(0, sd = 100)
     beta_enforce ~ dnorm(0, sd = 3) # model selection sensitive to vague priors
@@ -37,19 +38,15 @@ code <- nimbleCode({
     inc ~ dbern(0.5)  ## indicator variable for including the variable of interest
     betaInc <- beta_enforce * inc
     for(i in 1:n) {
+        ## city-level terms in the main likelihood
         prob[i] <- pnorm(beta0 + beta_age * dad_age[i] + betaInc * enforce[j[i]] +
             beta_benefit * benefit[j[i]] + alpha[j[i]])
         support[i] ~ dbern(prob[i])
     }
+    ## city random effects
     for(k in 1:m) 
         alpha[k] ~ dnorm(0, sd = sigma_alpha)
 })
-
-
-## side note: moving the benefit and enforce terms into the data level:
-##   prob[i] <- pnorm(beta0 + beta_age * dad_age[i] +
-##      betaInc * enforce[j[i]] + beta_benefit * benefit[j[i]] + alpha[j[i]])
-## seems to help mixing quite a bit even without data augmentation
 
 model <- nimbleModel(code, constants = list(n = n, m = m, dad_age = persons$dad_age,
                                         enforce = cities$enforce,
@@ -79,16 +76,16 @@ cmcmc$run(5000)
 
 smp <- as.matrix(cmcmc$mvSamples)
 
-beta_e <- smp[ , 'beta_enforce']
+beta_enforce <- smp[ , 'beta_enforce']
 
 par(mfrow = c(2,3))
 ts.plot(smp[ , 'beta_benefit'])
 ts.plot(smp[ , 'beta_age'])
 ts.plot(smp[ , 'sigma_alpha'])
-ts.plot(smp[ , 'beta_enforce'])
+ts.plot(beta_enforce)
 ## beta_enforce when it is in the model
-ts.plot(beta_e[beta_e != 0])  
-hist(beta_e[beta_e != 0])
+ts.plot(beta_enforce[beta_enforce != 0])  
+hist(beta_enforce[beta_enforce != 0])
 
 burnin <- 1000
 smp <- smp[(burnin+1):nrow(smp), ]
@@ -144,17 +141,16 @@ cmcmc$run(5000)
 
 smpDA <- as.matrix(cmcmc$mvSamples)
 
-beta_e <- smpDA[ , 'beta_enforce']
+beta_enforce <- smpDA[ , 'beta_enforce']
 
-X11()
 par(mfrow = c(2,3))
 ts.plot(smpDA[ , 'beta_benefit'])
 ts.plot(smpDA[ , 'beta_age'])
 ts.plot(smpDA[ , 'sigma_alpha'])
-ts.plot(smpDA[ , 'beta_enforce'])
+ts.plot(beta_enforce)
 ## beta_enforce when it is in the model
-ts.plot(beta_e[beta_e != 0])  
-hist(beta_e[beta_e != 0])
+ts.plot(beta_enforce[beta_enforce != 0])  
+hist(beta_enforce[beta_enforce != 0])
 
 burnin <- 1000
 smpDA <- smpDA[(burnin+1):nrow(smpDA), ]

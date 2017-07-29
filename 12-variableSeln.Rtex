@@ -4,7 +4,7 @@
 \sffamily
 \frametitle{Model selection and hypothesis testing}
 \begin{itemize}
-\item Most of the discussion so far has focused on Morte Carlo methods for point and interval estimation.
+\item Most of the discussion so far has focused on Monte Carlo methods for point and interval estimation.
 
 \item We move now to discuss MCMC methods in the context of model selection and hypothesis testing.
 
@@ -42,13 +42,13 @@ $$
 \bftheta \mid \sigma^2 , \bfgamma \sim \normal \left(\bftheta_{\bfgamma} \mid \mathbf{0}, c \sigma^2 
 \left\{ \bfX_{\bfgamma}^{T}\bfX_{\bfgamma} \right\}^{-1} \right) \prod_{k : \gamma_k = 0} \delta_{0}(\theta_k)  ,
 $$
-$\bfX_{\bfgamma}$ denotes the matrix composed of the columns of $\bfX$ for which associated with variables that have $\gamma_k$, and $\delta_0(\cdot)$ denotes the degenerate measure at $0$.
+$\bfX_{\bfgamma}$ denotes the matrix composed of the columns of $\bfX$ for which the associated  $\gamma_k = 1$, and $\delta_0(\cdot)$ denotes the degenerate measure at $0$.
 
 For the variance we have $\sigma^2 \mid \bfgamma \sim \IGam(a,b)$ (which is independent of $\bfgamma)$.
 
 Set $p(\bfgamma) = \frac{\Gamma(1 + \sum_{k=1}^{p} \gamma_i) \Gamma(1 + p - \sum_{k=1}^{p} \gamma_i)}{\Gamma(p + 2)}$, (Beta-Bernoulli prior).
 
-Set $c = n$ (more genrally, a prior centered on $n$.)
+Set $c = n$ (more generally, a prior centered on $n$.)
 \end{itemize}
 }
 
@@ -59,7 +59,7 @@ Set $c = n$ (more genrally, a prior centered on $n$.)
 \sffamily
 \frametitle{Variable selection}
 \begin{itemize}
-\item {\bf Example (variable selection in linear models, cont):}  Note that in this analysis we are really interested in the marginal posterior $p(\bfgamma \mid \bfy)$, and we can think of $\bftheta$ and $\sigma^2$ are ``nuisance'' parameters. Integrating them out we have
+\item {\bf Example (variable selection in linear models, cont):}  Note that in this analysis we are really interested in the marginal posterior $p(\bfgamma \mid \bfy)$, and we can think of $\bftheta$ and $\sigma^2$ as ``nuisance'' parameters. Integrating them out we have
 
 {\scriptsize
 \begin{multline*}
@@ -110,7 +110,7 @@ Hence, even in discrete problems with an ``analytical'' solutions you might want
 $$
 \bfvartheta = (\gamma_1, \ldots, \gamma_{k-1}, 1 - \gamma_k, \gamma_{k+1}, \ldots, \gamma_{p})
 $$
-\item An independent proposal could be constructed by generating a new model by randomly sampling from a uniform distribution over model, i.e., by letting $\vartheta_k \sim \Ber(1/2)$ independently for each $k$.
+\item An independent proposal could be constructed by generating a new model by randomly sampling from a uniform distribution over the entire model, i.e., by letting $\vartheta_k \sim \Ber(1/2)$ independently for each $k$.
 \end{itemize}
 
 The acceptance probability in both cases is
@@ -123,7 +123,7 @@ $$
 
 \frame{
 \sffamily
-\frametitle{Variable selction}
+\frametitle{Variable selection}
 
 \begin{itemize}
 \item {\bf Example (variable selection in a GLMM):} \cite{gelman2007data} analyzes a dataset of support provided by unmarried fathers to their children's mothers.  The model features are:

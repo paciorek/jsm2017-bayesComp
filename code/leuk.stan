@@ -23,12 +23,14 @@ transformed data {
   real r; 
   for(i in 1:N) {
     for(j in 1:NT) {
+      // observation process
       Y[i, j] = int_step(obs_t[i] - t[j] + .000000001);
+      // failure counting process
       dN[i, j] = Y[i, j] * fail[i] * int_step(t[j + 1] - obs_t[i] - .000000001);
     }
   }
   c = 0.001; 
-  r = 0.1; 
+  r = 0.1;  // fixed prior guess of lambda_0^*(t)
 }
 parameters {
   real beta; 
@@ -39,9 +41,10 @@ model {
   for(j in 1:NT) {
     // gamma process: independent increments of integrated hazard,
     // centered on that from an exponential baseline hazard model
-    dL0[j] ~ gamma(r * (t[j + 1] - t[j]) * c, c);
+    dL0[j] ~ gamma(c * r * (t[j + 1] - t[j]), c);
     for(i in 1:N) {
       if (Y[i, j] != 0)
+        // likelihood can be represented as a Poisson for dN increments
         // expression inside poisson() is rate not log rate
         // Stan-provided example uses that expression as log rate
         dN[i, j] ~ poisson(Y[i, j] * exp(beta * Z[i]) * dL0[j]);

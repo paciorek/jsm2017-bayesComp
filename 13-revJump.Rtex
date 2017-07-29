@@ -24,7 +24,7 @@
 
 \item Each model $\mathcal{M}_K$ has a set of distinct set of parameters $\bftheta_K$.  The associated prior is $p(\bftheta_K \mid K)$ which depends (explicitly or implicitly) on the dimension $K$.
 
-\item The model $\mathcal{M}_K$ and the parameters $\bftheta_K$, data is generated according to a likelihood $p(\bfy \mid K, \bftheta_K)$.
+\item Given model $\mathcal{M}_K$ and parameters $\bftheta_K$, data is generated according to a likelihood $p(\bfy \mid K, \bftheta_K)$.
 
 \item We denote the corresponding posterior distribution as $p(K, \bftheta_K \mid \bfy)$ which can be factorized as 
 $$
@@ -71,7 +71,7 @@ $$
 \frac{d_{K^{(p)}, K^{(c)}}}{d_{K^{(c)}, K^{(p)}}} \right.  \\  \left.
 %
 \left|  \frac{\partial T_{K^{(c)}, K^{(p)}} \left( \bftheta^{(c)}_{K^{(c)}}, \bfu^{K^{(c)}}_{(c)} \right) }
-{ \partial \left( \bftheta^{(p)}_{K^{(p)}}, \bfu^{K^{(p)}}_{(p)} \right)  } \right|
+{ \partial \left( \bftheta^{(c)}_{K^{(c)}}, \bfu^{K^{(c)}}_{(c)} \right)  } \right|
  \right\}
 \end{multline*}
 where $g_K(\bfu_K)$ is the density of the auxiliary variables and $d_{K, K'}$ is the probability of proposing a move to state $K'$ when you are currently in state $K$.
@@ -103,7 +103,7 @@ where $g_K(\bfu_K)$ is the density of the auxiliary variables and $d_{K, K'}$ is
 \frac{d_{K^{(p)}, K^{(c)}}}{d_{K^{(c)}, K^{(p)}}} \right.  \\  \left.
 %
 \left|  \frac{\partial T_{K^{(c)}, K^{(p)}} \left( \bftheta^{(c)}_{K^{(c)}}, \bfu^{K^{(c)}}_{(c)} \right) }
-{ \partial \left( \bftheta^{(p)}_{K^{(p)}}, \bfu^{K^{(p)}}_{(p)} \right)  } \right|
+{ \partial \left( \bftheta^{(c)}_{K^{(c)}}, \bfu^{K^{(c)}}_{(c)} \right)  } \right|
  \right\}
 \end{multline*}}
 \end{enumerate}
@@ -121,6 +121,8 @@ where $g_K(\bfu_K)$ is the density of the auxiliary variables and $d_{K, K'}$ is
 \item Remember that the proposals need to be reversible!
 
 \item Note that there are potentially a number of simplifications in the previous acceptance probability.  For example, you typically do not need to generate all the entries of $\bfu^{(c)}_{K^{(c)}}$ and $\bfu^{(p)}_{K^{(p)}}$.
+
+\item Note that the auxiliary variable densities determine the proposed values in for model $K^(p)$ so need to be chosen carefully - comparable to independent M-H schemes.
 
 \item The transitions above need to be combined with ``regular'' transition kernels within each dimension!
 \end{itemize}
@@ -143,13 +145,13 @@ The deterministic transformation between the full and reduced models is $ T_{0,1
 $d_{0,1} = d_{1,0} = 1$ and the Jacobian is one, so the proposals involve:
 
 \begin{itemize}
-\item Addition: propose $\beta_e^{(p)} = u^{(c)}$ from $u^{(c)} ~ g_0(u)$ with term $1/g_0(u^{(c)})$ in the acceptance ratio
+\item Addition: propose $\beta_e^{(p)} = u^{(c)}$ from $u^{(c)} \sim g_0(u)$ with term $1/g_0(u^{(c)})$ in the acceptance ratio
 \item Removal:  propose removal ($u^{(p)}=\beta_e^{(c)}$)  with term $g_0(\beta_e^{(c)})$ in the acceptance ratio
 \end{itemize}
 
 Note that auxiliary variable density $g_0(u)$ plays the role of a constant proposal distribution for $\beta_e$ so should be well-chosen.
 
-See \texttt{rj-childSupport.R} for the implementation using a user-defined sampler in NIMBLE.
+See \texttt{rjmcmc-childSupport.R} for the implementation using a user-defined sampler in NIMBLE.
 }
 \end{itemize}
 }
