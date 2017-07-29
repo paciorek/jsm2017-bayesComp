@@ -7,7 +7,7 @@ n <- length(y)
 ## @knitr mixture-auxiliary-code
 
 ## use of non-constant indexes requires NIMBLE version 0.6-6
-if(packageVersion(nimble) < '0.6.6')
+if(packageVersion('nimble') < '0.6.6')
     stop("NIMBLE version 0.6-6 or greater required for non-constant indexes.")
 
 nimbleOptions(allowDynamicIndexing = TRUE) ## it's a beta feature in 0.6-6
