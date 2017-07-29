@@ -6,15 +6,21 @@ n <- length(y)
 
 ## @knitr mixture-auxiliary-code
 
+## use of non-constant indexes requires NIMBLE version 0.6-6
+if(packageVersion(nimble) < '0.6.6')
+    stop("NIMBLE version 0.6-6 or greater required for non-constant indexes.")
+
+nimbleOptions(allowDynamicIndexing = TRUE) ## it's a beta feature in 0.6-6
+
 mixCode <- nimbleCode({
     for(i in 1:n) {
-        y[i] ~ dnorm(theta[ksi[i]+1], sd = sigma[ksi[i]+1])
+        y[i] ~ dnorm(theta[ksi[i]+1], var = sigma2[ksi[i]+1])
         ksi[i] ~ dbern(omega)
     }
     omega ~ dbeta(1, 1)
     for(j in 1:2) {
         theta[j] ~ dnorm(mu, tau2)
-        sigma[j] ~ dinvgamma(a, c)
+        sigma2[j] ~ dinvgamma(a, c)
     }
 })
 
@@ -24,12 +30,12 @@ mixModel <- nimbleModel(mixCode, data = list(y = y),
                         constants = list(n = n, mu = 0, tau2 = .000001,
                                          a = .001, c = .001),
                      inits = list(omega = 0.5, theta = rep(mean(y), 2),
-                                  sigma = rep(sd(y), 2),
+                                  sigma2 = rep(var(y), 2),
                                   ksi = sample(c(0,1), n, replace = T)))
 
 cmixModel <- compileNimble(mixModel)
 
-conf <- configureMCMC(mixModel, monitors = c('ksi', 'omega', 'theta', 'sigma'))
+conf <- configureMCMC(mixModel, monitors = c('ksi', 'omega', 'theta', 'sigma2'))
 mcmc <- buildMCMC(conf)
 cmcmc <- compileNimble(mcmc, project = mixModel)
 

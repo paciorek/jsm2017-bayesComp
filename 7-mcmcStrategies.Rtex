@@ -3,11 +3,11 @@
 \sffamily
 \frametitle{General design rules for MH algorithms}
 \begin{itemize}
-\item  MH algorithms algorithms are highly modular but there is a trade-off between simplicity of implementation, speed, and mixing.
+\item  MH algorithms are highly modular but there is a trade-off between simplicity of implementation, speed, and mixing.
 
-\item Block highly-correlated parameters (when there is no strong dependence individual samplers can move further than a blocked Gaussian)
+\item Block highly-correlated parameters (but when there is not strong dependence individual samplers can move further than a blocked Gaussian).
 
-\item Reparameterizing the model to center it or to make it orthogonal is usually helpful!  This is easy to do in the context of linear model, but not always so in other case (computing information matrices might provide hints).
+\item Reparameterizing the model to center it or to make parameters less correlated is usually helpful!  This is easy to do in the context of linear model, but not always so in other case (computing information matrices might provide hints).
 
 \item As a rule of thumb, you want to ``integrate out'' as many parameters as you can before attempting to use any Metropolis/Gibbs steps.
 However, introducing latent variables can greatly simplify algorithms and in some cases improve mixing.
@@ -101,7 +101,7 @@ for $i=1, \ldots, I$ and $j=1, \ldots, J$.
 \vspace{0.2cm}
 \begin{itemize}
 \item We simulated data with $\eta = 0.8$, $\sigma^2 = 1$ and $\tau^2 = 2$, and ran the algorithm.
-\item $\theta_1$ and $\eta$ show high autocorrelation and slow mixing.
+\item $\theta_1$ and $\eta$ show high (negative) autocorrelation and slow mixing.
 \end{itemize}
 \end{minipage}
 %&

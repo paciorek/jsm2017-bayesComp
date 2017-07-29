@@ -26,8 +26,7 @@ smp1 <- as.matrix(cmcmc$mvSamples)
 
 cBlissModel$setInits(inits2)
 set.seed(1)
-## reset is so that adaptation restarts from the beginning
-cmcmc$run(nIts, reset = TRUE)
+cmcmc$run(nIts)
 
 smp2 <- as.matrix(cmcmc$mvSamples)
 
@@ -53,3 +52,14 @@ for(i in 1:3)
 for(i in 1:3)
     ts.plot(smp2[, i], main = nm[i], xlab = '', ylab = '')
 dev.off()
+
+## chain not coverged during initial few hundred samples, so R value is still large
+## let's see what happens if we exclude burnin (by default half the chain)
+
+gr = gelman.diag(chains, autoburnin = TRUE)
+print(gr)
+## force plot to only assess last half of chains:
+chains <- as.mcmc.list(
+    list(as.mcmc(smp1[1501:3000, ]), as.mcmc(smp2[1501:3000, ])))
+gelman.plot(chains, autoburnin = FALSE, auto.layout = FALSE,
+            col = 1:3)

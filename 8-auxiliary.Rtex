@@ -4,9 +4,9 @@
 \sffamily
 \frametitle{Auxiliary variables}
 \begin{itemize}
-\item In spite of all the caveats mentioned so far, Gibbs steps are very often preferable because they are simpler implement.
+\item In spite of all the caveats mentioned so far, Gibbs steps are very often preferable because they are simpler to implement.
 
-\item Particularly in high-dimensional problems, making joint proposals is difficult and univariate random-walk MH steps end up being very inefficient.
+\item Particularly in high-dimensional problems, making joint proposals is difficult, while univariate random-walk MH steps end up being very inefficient.
 
 \item In many cases computation can be simplified by adding auxiliary variables (we are not interested in them, but they are added for convenience!)
 
@@ -176,7 +176,7 @@ It is well known that the Student $t$ distribution can be written as a scale mix
 y_i \mid \bfbeta, \sigma^2, \lambda_i &\sim \normal \left( \bfx_i^T \bfbeta, \frac{\sigma^2}{\lambda_i} \right) ,    &   \lambda_i &\sim \Gam\left( \frac{\nu}{2}, \frac{\nu}{2} \right) .
 \end{align*}
 
-Including $\lambda_1, \ldots, \lambda_n$ in the model makes the full conditional for $\bfbeta$ a Gaussian and the full conditional for $\sigma^2$ and inverse Gamma.  On the other hand, the full conditional for $\lambda_i$ is another Gamma, while $\nu$ needs to be sampled using a MH step (preferably from the unaugmented model!).
+Including $\lambda_1, \ldots, \lambda_n$ in the model makes the full conditional for $\bfbeta$ a Gaussian and the full conditional for $\sigma^2$ an inverse Gamma.  On the other hand, the full conditional for $\lambda_i$ is another Gamma, while $\nu$ needs to be sampled using a MH step (preferably from the unaugmented model!).
 \end{itemize}
 }
 

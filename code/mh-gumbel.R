@@ -1,6 +1,6 @@
 ## @knitr gumbel-setup
 n <- 100
-x <- -log(-log(runif(n)))
+x <- -log(-log(runif(n)))  # x is Gumbel-distributed with true theta = 0
 ### hist(x)
 
 ### Prior Parameters
@@ -11,7 +11,7 @@ kappa2 <- 1
 r <- 2000
 
 ### Initial value
-thetaInit <- 0    
+thetaInit <- 0  # cheating a bit -- we start at the true value, so throwing away initial chain values won't be needed  
 
 ## @knitr gumbel-nimble-dist, warning=FALSE, message=FALSE
 ### Density of the Gumbel distribution, written as a nimbleFunction to allow use in BUGS code and compilation
@@ -44,7 +44,8 @@ tau2 <- 5
 ### empty MCMC configuration as default would use adaptive algorithm 
 conf <- configureMCMC(gumbelModel, nodes = NULL)
 ### add basic Metropolis sampler for the parameter
-conf$addSampler('theta', 'RW', control = list(adaptive = FALSE, scale = sqrt(tau2)))
+conf$addSampler('theta', 'RW', control = list(adaptive = FALSE,
+                                              scale = sqrt(tau2)))
 ### create MCMC algorithm for the model, given the configuration
 mcmc <- buildMCMC(conf)
 ### compiled version of the model
@@ -58,13 +59,15 @@ cmcmc$run(r)
 ## @knitr gumbel-results
 ### basic diagnostics
 smp1 <- as.matrix(cmcmc$mvSamples)
+## source('utils.R')
 accRate1 <- calcAccRate(smp1[ , 1])
 ess1 <- coda::effectiveSize(smp1)
 
 ## @knitr gumbel-other-prop-variances
 tau2 <- 0.001
 conf$removeSamplers()
-conf$addSampler('theta', 'RW', control = list(adaptive = FALSE, scale = sqrt(tau2)))
+conf$addSampler('theta', 'RW', control = list(adaptive = FALSE,
+                                              scale = sqrt(tau2)))
 mcmc <- buildMCMC(conf)
 cmcmc <- compileNimble(mcmc, resetFunctions = TRUE)
 cmcmc$run(r)

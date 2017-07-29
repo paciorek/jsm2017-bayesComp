@@ -73,7 +73,7 @@ and deterministic relationships with \texttt{<-}.
 
 See Chapter 5 of the NIMBLE manual for available distributions, default and alternative parameterizations, and functions.
 
-We don't actually need the \texttt{pred\_y} line of code; instead:
+We don't actually need the \texttt{pred\_y} line of code; could have:
 %% begin.rcode eval=FALSE
 y[i] ~ dnorm(intcpt + slope * x[i], sd = sigma)
 %% end.rcode

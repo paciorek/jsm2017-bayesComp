@@ -108,7 +108,7 @@
 %
 % source('code/utils.R')
 % library(methods)
-% library(nimble, lib.loc='/tmp/nim066')
+% library(nimble) 
 %
 % read_chunk('code/nimbleIntro.R')
 % read_chunk('code/mh-gumbel.R')

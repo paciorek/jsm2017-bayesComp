@@ -32,7 +32,7 @@
 
 \item In practice, if your posterior is unimodal, you just want your initial state to be close to the high-probability areas.
 
-\item When posterior are multimodal convergence can be a huge issue.
+\item When posterior is multimodal, convergence can be a huge issue.
 \end{itemize}
 \end{itemize}
 }
@@ -106,7 +106,7 @@ where $Z_B$ is an estimate of between-chain variability, $W_B$ is an estimate of
 \frame{
 \sffamily
 \frametitle{Checking for convergence (Multi-chain methods)}
-If $\zeta = h(\theta)$ is the quantity of interest being monitored, define
+If $\xi = h(\theta)$ is the quantity of interest being monitored, define
 \begin{align*}
 \bar{\xi}_m &= \frac{1}{B} \sum_{b=1}^{B} \xi_m^{(b)}   &  \bar{\xi} &= \frac{1}{M} \sum_{m=1}^{M} \bar{\xi}_m & s_m^2 &= \frac{1}{B} \sum_{b=1}^{B} \left(\xi_m^{(b)} - \bar{\xi}\right)^2 
 \end{align*}
@@ -116,9 +116,9 @@ Then
 Z_B &= \frac{1}{M} \sum_{m=1}^{M} \left(\bar{\xi}_m - \bar{\xi}\right)^2   &  W_B &= \frac{1}{M} \sum_{m=1}^{M} s_m^2  
 \end{align*}
 and
-\begin{align*}
-s_m^2 &= \frac{1}{B} \sum_{b=1}^{B} \left(\xi_m^{(b)} - \bar{\xi}\right)^2 &  \nu_B &= \frac{2\left( \frac{B-1}{B}W_B + \frac{M+1}{M} Z_B \right)^2}{W_B}
-\end{align*}
+$$
+ \nu_B = \frac{2\left( \frac{B-1}{B}W_B + \frac{M+1}{M} Z_B \right)^2}{W_B}
+$$
 
 }
 
@@ -203,6 +203,7 @@ $$
 \item More specifically, we can divide the original chain of length $B$ into $M$ sections of approximately equal length and compare their spectral densities.
 
 \item In particular \cite{Ge92} proposes to compare the first and second half of the chain (i.e., use $M=2$).  The algorithm is implemented in the \texttt{R} function \texttt{geweke.diag} and \texttt{geweke.plot}.
+\item Interestingly, the most recent edition of Gelman et al. Bayesian Data Analysis suggests to use the Gelman-Rubin approach with each chain split into two to assess both mixing and convergence.
 \end{itemize}
 }
 
@@ -237,10 +238,7 @@ $$
 
 \vspace{1mm}
 
-\item From Markov chain theory, it is easy to show that for an MCMC that has converged the variance of the same estimator is $\tau_h \frac{\Var h(\bftheta)}{ B}$ where $\tau_h$ is the integrated autocorrelation:
-$$
-\tau_h = 1 + 2 \sum_{b=1}^{\infty} \Cor \left\{ h\left(\bftheta^{(1)}\right), h\left(\bftheta^{(b)}\right) \right\}
-$$
+\item From Markov chain theory, it is easy to show that for an MCMC that has converged the variance of the same estimator is $\tau_h \frac{\Var h(\bftheta)}{ B}$ where $\tau_h$ is the integrated autocorrelation: $\tau_h = 1 + 2 \sum_{t=1}^{\infty} \rho_t $, with $\rho_t$  the autocorrelation at lag $t$.
 
 \item We call $\frac{B}{\tau_h}$ the equivalent sample size.
 \end{itemize}
@@ -261,7 +259,7 @@ $$
 
 \item Note that the equivalent sample size will be different for different parameters.  That means that a given number of iterations might be enough for one parameter, but not for another.
 
-\item Some people like to ``thin" their chain (retain every X number of iterations and drop the rest) as a way to decrease $\tau_g$.  However, this also reduces $B$!  
+\item Some people like to ``thin" their chain (retain every X number of iterations and drop the rest) as a way to decrease $\tau_h$.  However, this also reduces $B$!  
 \begin{itemize}
 \item \citet{maceachern1994subsampling} proved the tradeoff is not favorable.
 \item Unless storage (in memory or on disk) is an issue, thinning is not a good idea.
